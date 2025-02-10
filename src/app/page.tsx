@@ -1,7 +1,7 @@
 "use client";
 
-import { type Quote } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
+import type { QuotesResponse } from "./api/quotes/QuoteResponse";
 
 export default function HomePage() {
   const {
@@ -13,7 +13,7 @@ export default function HomePage() {
     queryFn: async () => {
       const response = await fetch("/api/quotes");
       const quotes = await response.json();
-      return quotes as Quote[];
+      return quotes as QuotesResponse;
     },
   });
 
@@ -24,7 +24,7 @@ export default function HomePage() {
     <div>
       <h1>qdb</h1>
       <ul>
-        {quotes?.map((quote) => (
+        {quotes?.quotes.map((quote) => (
           <li key={quote.id}>{quote.body}</li>
         ))}
       </ul>
