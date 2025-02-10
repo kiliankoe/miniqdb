@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.gitignore
+.dockerignore
+.env
+.env.local
+
+prisma/db.sqlite
+prisma/db.sqlite-journal
