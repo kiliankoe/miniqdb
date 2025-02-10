@@ -22,6 +22,7 @@ function AddForm() {
       onSubmit={async (e) => {
         e.preventDefault();
         // await addQuote(newQuote);
+        // TODO: Do the reddit equivalent of auto-upvoting the quote
         router.push("/");
       }}
       className="flex flex-col gap-4"
