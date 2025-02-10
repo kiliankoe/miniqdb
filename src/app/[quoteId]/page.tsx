@@ -1,6 +1,13 @@
-// import { getQuote } from "../api/quotes/GetQuote";
+import { getQuote } from "../api/quotes/GetQuotes";
 
-export default async function QuotePage({ params }: { params: { quoteId: string } }) {
-  // const quote = await getQuote(params.quoteId);
-  return <div>{params.quoteId}</div>;
+export default async function QuotePage({ params }: { params: Promise<{ quoteId: string }> }) {
+  const { quoteId } = await params;
+  const quote = await getQuote(quoteId);
+  return (
+    <div>
+      {quote?.text?.split("\\n").map((line, i) => (
+        <div key={i}>{line}</div>
+      ))}
+    </div>
+  );
 }

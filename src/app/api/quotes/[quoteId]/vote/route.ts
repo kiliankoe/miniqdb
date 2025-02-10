@@ -1,7 +1,11 @@
-export async function PUT(request: Request, { params }: { params: { quoteId: string } }) {
-  const { quoteId } = params;
-  const { vote } = await request.json();
-  console.log(quoteId, vote);
+import type { NextRequest } from "next/server";
+
+export async function PUT(request: NextRequest) {
+  const params = await request.nextUrl.searchParams;
+  const quoteId = params.get("quoteId");
+  const authorId = params.get("authorId");
+  const vote = params.get("vote");
+  console.log(quoteId, authorId, vote);
   // const quote = await getQuote(quoteId);
   // const updatedQuote = await updateQuote(quoteId, { vote });
   // return NextResponse.json(updatedQuote);

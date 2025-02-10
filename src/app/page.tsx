@@ -5,17 +5,18 @@ import { QuoteView } from "./QuoteView";
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const page = parseInt((searchParams.page ?? "0") as string);
-  const limit = parseInt((searchParams.limit ?? "10") as string);
+  const params = await searchParams;
+  const page = parseInt((params.page as string) ?? "0");
+  const limit = parseInt((params.limit as string) ?? "10");
   const quotes = await getQuotes("newest", page, limit);
 
   return (
     <div>
       <ul>
         {quotes?.quotes.map((quote) => (
-          <li key={quote.id} className="my-8">
+          <li key={quote.id} className="my-6">
             <QuoteView quote={quote} />
           </li>
         ))}

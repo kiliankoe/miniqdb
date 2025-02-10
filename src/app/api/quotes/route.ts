@@ -24,3 +24,10 @@ export async function GET(request: NextRequest) {
   const resp = await getQuotes(sort as Sort, parseInt(page), parseInt(limit));
   return NextResponse.json(resp);
 }
+
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  console.log(body);
+  // const quote = await addQuote(body);
+  return NextResponse.json({});
+}

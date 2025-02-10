@@ -15,11 +15,9 @@ datasource db {
 
 model Quote {
   id        Int      @id @default(autoincrement())
-  body      String?
-  file      String?
+  text      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  author    String?
   votes     Vote[]
 }
 

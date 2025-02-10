@@ -2,6 +2,15 @@ import { PrismaClient } from "@prisma/client";
 import type { QuotesResponse } from "./QuoteResponse";
 import type { Sort } from "./Sort";
 
+export async function getQuote(quoteId: string) {
+  const db = new PrismaClient();
+  const id = parseInt(quoteId);
+  const quote = await db.quote.findUnique({
+    where: { id },
+  });
+  return quote;
+}
+
 export async function getQuotes(sort: Sort, page: number, limit: number) {
   const db = new PrismaClient();
   const totalCount = await db.quote.count();
@@ -27,8 +36,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number) {
       id: quote.id,
       createdAt: quote.createdAt,
       score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
-      body: quote.body,
-      file: quote.file,
+      text: quote.text,
     })),
     totalCount,
     pageCount: Math.ceil(totalCount / limit),

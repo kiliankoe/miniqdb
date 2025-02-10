@@ -3,8 +3,7 @@ export type QuotesResponse = {
     id: number;
     createdAt: Date;
     score: number;
-    body: string | null;
-    file: string | null;
+    text: string | null;
   }[];
   totalCount: number;
   pageCount: number;
