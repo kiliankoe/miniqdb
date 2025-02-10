@@ -1,24 +1,12 @@
-"use client";
-
-import { useQuery } from "@tanstack/react-query";
-import type { QuotesResponse } from "./api/quotes/QuoteResponse";
-
-export default function HomePage() {
-  const {
-    data: quotes,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["quotes"],
-    queryFn: async () => {
-      const response = await fetch("/api/quotes");
-      const quotes = await response.json();
-      return quotes as QuotesResponse;
-    },
-  });
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+import { getQuotes } from "./api/quotes/GetQuotes";
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const page = parseInt(searchParams.page as string);
+  const limit = parseInt(searchParams.limit as string);
+  const quotes = await getQuotes("newest", page, limit);
 
   return (
     <div>
