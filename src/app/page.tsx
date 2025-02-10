@@ -1,6 +1,6 @@
 import React from "react";
 import { getQuotes } from "./api/quotes/GetQuotes";
-import { QuoteView } from "./QuoteView";
+import { QuoteView } from "../shared/QuoteView";
 
 export default async function HomePage({
   searchParams,

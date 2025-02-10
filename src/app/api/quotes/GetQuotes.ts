@@ -8,7 +8,18 @@ export async function getQuote(quoteId: string) {
   const quote = await db.quote.findUnique({
     where: { id },
   });
-  return quote;
+  if (!quote) {
+    return null;
+  }
+  const votes = await db.vote.findMany({
+    where: { quoteId: id },
+  });
+  return {
+    id: quote.id,
+    createdAt: quote.createdAt,
+    score: votes.reduce((acc, vote) => acc + vote.value, 0),
+    text: quote.text,
+  };
 }
 
 export async function getQuotes(sort: Sort, page: number, limit: number) {
