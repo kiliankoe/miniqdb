@@ -1,6 +1,7 @@
 import React from "react";
 import { getQuotes } from "./api/quotes/GetQuotes";
 import { QuoteView } from "../shared/QuoteView";
+import { Pagination } from "@mui/material";
 
 export default async function HomePage({
   searchParams,
@@ -21,6 +22,7 @@ export default async function HomePage({
           </li>
         ))}
       </ul>
+      <Pagination count={quotes?.pageCount ?? 0} />
     </div>
   );
 }
