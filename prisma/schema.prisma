@@ -19,7 +19,7 @@ model Quote {
   file      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  authorId  String?
+  author    String?
   votes     Vote[]
 }
 
@@ -28,5 +28,6 @@ model Vote {
   quoteId   Int
   quote     Quote    @relation(fields: [quoteId], references: [id])
   value     Int // 1 or -1
+  author    String
   createdAt DateTime @default(now())
 }
