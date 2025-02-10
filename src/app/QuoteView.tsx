@@ -1,9 +1,25 @@
 import type { Quote } from "@prisma/client";
+import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 // This feels like a hack lol
 type ClientQuote = Pick<Quote, "id" | "text" | "createdAt"> & { score: number };
+
+function parseMarkdownLinks(text: string) {
+  return text.split(/(\[.*?\]\(.*?\))/).map((segment, j) => {
+    const linkMatch = segment.match(/\[(.*?)\]\((.*?)\)/);
+    if (linkMatch) {
+      const [_, text, url] = linkMatch;
+      return (
+        <a key={j} href={url} className="underline hover:text-blue-400" target="_blank" rel="noopener noreferrer">
+          {text}
+        </a>
+      );
+    }
+    return segment;
+  });
+}
 
 export function QuoteView({ quote }: { quote: ClientQuote }) {
   return (
@@ -23,7 +39,7 @@ export function QuoteView({ quote }: { quote: ClientQuote }) {
       <div>
         {quote.text?.split("\\n").map((line, i) => (
           <React.Fragment key={i}>
-            {line}
+            {parseMarkdownLinks(line)}
             <br />
           </React.Fragment>
         ))}
@@ -41,14 +57,14 @@ function VoteView({ score, disabled }: { score: number; disabled: boolean }) {
         disabled={disabled}
         className={`${sharedClasses} bg-orange-400 dark:bg-orange-800 hover:bg-orange-500 dark:hover:bg-orange-700`}
       >
-        <img src="/chevron-up.svg" alt="upvote" />
+        <Image src="/chevron-up.svg" alt="upvote" width={18} height={18} />
       </button>
       <span className="font-mono">{score}</span>
       <button
         disabled={disabled}
         className={`${sharedClasses} bg-purple-400 dark:bg-purple-800 hover:bg-purple-500 dark:hover:bg-purple-700`}
       >
-        <img src="/chevron-down.svg" alt="downvote" />
+        <Image src="/chevron-down.svg" alt="downvote" width={18} height={18} />
       </button>
     </div>
   );
