@@ -26,7 +26,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number) {
   const db = new PrismaClient();
   const totalCount = await db.quote.count();
   const quotes = await db.quote.findMany({
-    skip: page * limit,
+    skip: (page - 1) * limit,
     take: limit,
     orderBy: {
       createdAt: sort === "newest" ? "desc" : "asc",
