@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import ClientLayout from "./ClientLayout";
 import "./globals.css";
-import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +28,7 @@ export default function RootLayout({
     <html lang="en">
       <ClientLayout>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased m-6 dark:bg-zinc-900 dark:text-white`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased p-6 dark:bg-zinc-900 dark:text-white h-full`}
         >
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold text-orange-500">bash</h1>
