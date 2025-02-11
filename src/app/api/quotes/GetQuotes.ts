@@ -57,14 +57,22 @@ export async function getQuotes(sort: Sort, page: number, limit: number) {
   const quotes = await db.quote.findMany({
     skip: (page - 1) * limit,
     take: limit,
-    orderBy:
-      sort === "newest"
-        ? {
-            createdAt: "desc",
-          }
-        : {
-            createdAt: "asc",
-          },
+    orderBy: (() => {
+      switch (sort) {
+        case "newest":
+          return { createdAt: "desc" };
+        case "oldest":
+          return { createdAt: "asc" };
+        case "top":
+          return {
+            votes: {
+              _count: "desc",
+            },
+          };
+        default:
+          return { createdAt: "desc" };
+      }
+    })(),
     include: {
       _count: {
         select: { votes: true },
@@ -76,6 +84,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number) {
       },
     },
   });
+
   return {
     quotes: quotes.map((quote) => ({
       id: quote.id,
