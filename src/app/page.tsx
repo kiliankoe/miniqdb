@@ -22,7 +22,7 @@ export default async function HomePage({
           </li>
         ))}
       </ul>
-      <Pagination count={quotes?.pageCount ?? 0} />
+      <Pagination count={quotes?.pageCount ?? 0} color="secondary" size="small" />
     </div>
   );
 }
