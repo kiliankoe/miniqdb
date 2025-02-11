@@ -25,8 +25,8 @@ function parseMarkdownLinks(text: string) {
 
 export function QuoteView({ quote }: { quote: ClientQuote }) {
   return (
-    <div className="flex flex-col gap-1">
-      <div className="flex flex-row gap-4 items-center">
+    <Stack direction="column" spacing={1}>
+      <Stack direction="row" spacing={2} alignItems="center">
         <Link href={`/${quote.id}`}>
           <div className="text-sm font-mono text-gray-500 underline-offset-2 underline">
             {quote.createdAt.toLocaleString("de-DE", {
@@ -37,7 +37,7 @@ export function QuoteView({ quote }: { quote: ClientQuote }) {
           </div>
         </Link>
         <VoteView score={quote.score} />
-      </div>
+      </Stack>
       <div>
         {quote.text?.split("\\n").map((line, i) => (
           <React.Fragment key={i}>
@@ -46,7 +46,7 @@ export function QuoteView({ quote }: { quote: ClientQuote }) {
           </React.Fragment>
         ))}
       </div>
-    </div>
+    </Stack>
   );
 }
 
