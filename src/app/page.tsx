@@ -30,7 +30,7 @@ export default function HomePage() {
           </li>
         ))}
       </ul>
-      <Pagination count={quotes?.pageCount ?? 0} page={page} color="primary" size="small" onChange={handlePageChange} />
+      <Pagination count={quotes?.pageCount ?? 0} page={page} size="small" onChange={handlePageChange} />
     </div>
   );
 }
