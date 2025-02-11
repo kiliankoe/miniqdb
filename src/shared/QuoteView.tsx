@@ -1,12 +1,16 @@
-import { Button, Stack } from "@mui/material";
-import type { Quote } from "@prisma/client";
-import Image from "next/image";
-import Link from "next/link";
-import React from "react";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-// This feels like a hack lol
-type ClientQuote = Pick<Quote, "id" | "text" | "createdAt"> & { score: number };
+import { IconButton, Stack, Typography } from "@mui/material";
+import type { Quote } from "@prisma/client";
+import Link from "next/link";
+import React from "react";
+
+// This is such a hack lol, but I want to keep the generated data type.
+export type ClientQuote = Pick<Quote, "id" | "text"> & {
+  // Unfortunately these don't survive json serialization
+  createdAt: string;
+  score: number;
+};
 
 function parseMarkdownLinks(text: string) {
   return text.split(/(\[.*?\]\(.*?\))/).map((segment, j) => {
@@ -14,7 +18,7 @@ function parseMarkdownLinks(text: string) {
     if (linkMatch) {
       const [_, text, url] = linkMatch;
       return (
-        <a key={j} href={url} className="underline hover:text-blue-400" target="_blank" rel="noopener noreferrer">
+        <a key={j} href={url} className="underline" target="_blank" rel="noopener noreferrer">
           {text}
         </a>
       );
@@ -24,17 +28,19 @@ function parseMarkdownLinks(text: string) {
 }
 
 export function QuoteView({ quote }: { quote: ClientQuote }) {
+  const createdAt = new Date(quote.createdAt);
+
   return (
-    <Stack direction="column" spacing={1}>
-      <Stack direction="row" spacing={2} alignItems="center">
+    <Stack direction="column" spacing={0}>
+      <Stack direction="row" spacing={1} alignItems="center">
         <Link href={`/${quote.id}`}>
-          <div className="text-sm font-mono text-gray-500 underline-offset-2 underline">
-            {quote.createdAt.toLocaleString("de-DE", {
+          <Typography variant="body2" sx={{ fontFamily: "monospace", textDecoration: "underline", textUnderlineOffset: 1 }} color="text.secondary">
+            {createdAt.toLocaleString("de-DE", {
               year: "2-digit",
               month: "2-digit",
               day: "2-digit",
             })}
-          </div>
+          </Typography>
         </Link>
         <VoteView score={quote.score} />
       </Stack>
@@ -61,13 +67,15 @@ function VoteView({
 }) {
   return (
     <Stack direction="row" spacing={1} alignItems="center">
-      <Button variant="contained" color="secondary" size="small" sx={{ borderRadius: 0 }}>
-        <ExpandLessIcon fontSize="small" />
-      </Button>
-      <span className="font-mono">{score}</span>
-      <Button variant="contained" color="secondary" size="small" sx={{ borderRadius: 0 }}>
-        <ExpandMoreIcon fontSize="small" />
-      </Button>
+      <IconButton color={isUpvoted ? "upvote" : "default"} size="small">
+        <ExpandLessIcon />
+      </IconButton>
+      <Typography variant="body1" sx={{ fontFamily: "monospace" }}>
+        {score}
+      </Typography>
+      <IconButton color={isDownvoted ? "downvote" : "default"} size="small">
+        <ExpandMoreIcon  />
+      </IconButton>
     </Stack>
   );
 }

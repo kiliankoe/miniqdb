@@ -17,6 +17,7 @@ export default async function HomePage({
     <div>
       <ul>
         {quotes?.quotes.map((quote) => (
+        {quotes?.quotes.map((quote: ClientQuote) => (
           <li key={quote.id} className="my-6">
             <QuoteView quote={quote} />
           </li>
