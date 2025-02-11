@@ -25,12 +25,46 @@ export async function getQuote(quoteId: string) {
 export async function getQuotes(sort: Sort, page: number, limit: number) {
   const db = new PrismaClient();
   const totalCount = await db.quote.count();
+
+  if (sort === "random") {
+    const skip = Math.floor(Math.random() * (totalCount - limit + 1));
+    const quotes = await db.quote.findMany({
+      skip,
+      take: limit,
+      include: {
+        _count: {
+          select: { votes: true },
+        },
+        votes: {
+          select: {
+            value: true,
+          },
+        },
+      },
+    });
+    return {
+      quotes: quotes.map((quote) => ({
+        id: quote.id,
+        createdAt: quote.createdAt,
+        score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
+        text: quote.text,
+      })),
+      totalCount,
+      pageCount: Math.ceil(totalCount / limit),
+    } satisfies QuotesResponse;
+  }
+
   const quotes = await db.quote.findMany({
     skip: (page - 1) * limit,
     take: limit,
-    orderBy: {
-      createdAt: sort === "newest" ? "desc" : "asc",
-    },
+    orderBy:
+      sort === "newest"
+        ? {
+            createdAt: "desc",
+          }
+        : {
+            createdAt: "asc",
+          },
     include: {
       _count: {
         select: { votes: true },
