@@ -34,7 +34,11 @@ export function QuoteView({ quote }: { quote: ClientQuote }) {
     <Stack direction="column" spacing={0}>
       <Stack direction="row" spacing={1} alignItems="center">
         <Link href={`/${quote.id}`}>
-          <Typography variant="body2" sx={{ fontFamily: "monospace", textDecoration: "underline", textUnderlineOffset: 1 }} color="text.secondary">
+          <Typography
+            variant="body2"
+            sx={{ fontFamily: "monospace", textDecoration: "underline", textUnderlineOffset: 1 }}
+            color="text.secondary"
+          >
             {createdAt.toLocaleString("de-DE", {
               year: "2-digit",
               month: "2-digit",
@@ -74,7 +78,7 @@ function VoteView({
         {score}
       </Typography>
       <IconButton color={isDownvoted ? "downvote" : "default"} size="small">
-        <ExpandMoreIcon  />
+        <ExpandMoreIcon />
       </IconButton>
     </Stack>
   );
