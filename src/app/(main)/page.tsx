@@ -4,7 +4,7 @@ import { Pagination } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { QuoteView, type ClientQuote } from "@/shared/QuoteView";
-import type { Sort } from "./api/quotes/Sort";
+import type { Sort } from "@/app/api/quotes/Sort";
 
 export default function HomePage() {
   const router = useRouter();
