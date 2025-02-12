@@ -37,8 +37,12 @@ export function QuoteView({ quote }: { quote: ClientQuote }) {
         <Link href={`/${quote.id}`}>
           <Typography
             variant="body2"
-            sx={{ fontFamily: "monospace", textDecoration: "underline", textUnderlineOffset: 1 }}
             color="text.secondary"
+            sx={{
+              fontFamily: "monospace",
+              textDecoration: "underline",
+              textUnderlineOffset: 1,
+            }}
           >
             {createdAt.toLocaleString("de-DE", {
               year: "2-digit",
