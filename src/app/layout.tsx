@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "miniqdb",
+  title: process.env.MINIQDB_NAME === "" ? "miniqdb" : process.env.MINIQDB_NAME,
   description: "quote database",
 };
 
