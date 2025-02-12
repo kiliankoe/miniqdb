@@ -1,14 +1,12 @@
 "use client";
 
+import { Box, Button, TextField } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { TextField, Button, Container, Box } from "@mui/material";
 
 export default function NewQuotePage() {
   return (
-    <Container maxWidth="sm">
-      <AddForm />
-    </Container>
+    <AddForm />
   );
 }
 
@@ -32,6 +30,7 @@ function AddForm() {
         flexDirection: "column",
         gap: 4,
         mt: 4,
+        maxWidth: "600px",
       }}
     >
       <TextField
@@ -55,7 +54,6 @@ function AddForm() {
         disabled={newQuote.length < 5}
         sx={{
           width: { md: "256px" },
-          mx: "auto",
           bgcolor: (theme) => (theme.palette.mode === "dark" ? "orange.900" : "orange.400"),
           "&:hover": {
             bgcolor: (theme) => (theme.palette.mode === "dark" ? "orange.800" : "orange.500"),
