@@ -3,7 +3,7 @@
 import { Pagination } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { QuoteView, type ClientQuote } from "../shared/QuoteView";
+import { QuoteView, type ClientQuote } from "@/shared/QuoteView";
 import type { Sort } from "./api/quotes/Sort";
 
 export default function HomePage() {

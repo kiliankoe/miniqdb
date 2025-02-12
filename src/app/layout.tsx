@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import ClientLayout from "./ClientLayout";
+import ClientLayout from "@/app/(main)/ClientLayout";
 import "./globals.css";
-import Navigation from "./Navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,19 +23,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const appName = process.env.MINIQDB_NAME === "" ? "miniqdb" : process.env.MINIQDB_NAME;
-
   return (
     <html lang="en">
       <ClientLayout>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased p-6 dark:bg-zinc-900 dark:text-white h-full`}
         >
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-orange-500">{appName}</h1>
-            {/* <Link href="/rss">rss</Link> */}
-          </div>
-          <Navigation />
           {children}
         </body>
       </ClientLayout>
