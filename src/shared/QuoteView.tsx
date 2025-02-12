@@ -16,7 +16,7 @@ function parseMarkdownLinks(text: string) {
   return text.split(/(\[.*?\]\(.*?\))/).map((segment, j) => {
     const linkMatch = segment.match(/\[(.*?)\]\((.*?)\)/);
     if (linkMatch) {
-      const [_, text, url] = linkMatch;
+      const [, text, url] = linkMatch;
       return (
         <a key={j} href={url} className="underline" target="_blank" rel="noopener noreferrer">
           {text}
