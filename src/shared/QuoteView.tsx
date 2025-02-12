@@ -1,6 +1,7 @@
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { IconButton, Stack, Typography } from "@mui/material";
+import { blue, orange } from "@mui/material/colors";
 import type { Quote } from "@prisma/client";
 import Link from "next/link";
 import React from "react";
@@ -60,24 +61,30 @@ export function QuoteView({ quote }: { quote: ClientQuote }) {
   );
 }
 
-function VoteView({
-  score,
-  isUpvoted = false,
-  isDownvoted = false,
-}: {
-  score: number;
-  isUpvoted?: boolean;
-  isDownvoted?: boolean;
-}) {
+function VoteView({ score, vote }: { score: number; vote?: 1 | -1 }) {
   return (
     <Stack direction="row" spacing={1} alignItems="center">
-      <IconButton color={isUpvoted ? "upvote" : "default"} size="small">
+      <IconButton
+        size="small"
+        sx={{
+          "& .MuiSvgIcon-root": {
+            color: vote === 1 ? orange[400] : "text.secondary",
+          },
+        }}
+      >
         <ExpandLessIcon />
       </IconButton>
       <Typography variant="body1" sx={{ fontFamily: "monospace" }}>
         {score}
       </Typography>
-      <IconButton color={isDownvoted ? "downvote" : "default"} size="small">
+      <IconButton
+        size="small"
+        sx={{
+          "& .MuiSvgIcon-root": {
+            color: vote === -1 ? blue[400] : "text.secondary",
+          },
+        }}
+      >
         <ExpandMoreIcon />
       </IconButton>
     </Stack>
