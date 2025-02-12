@@ -8,11 +8,12 @@ import { useMemo, useState, useEffect } from "react";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const queryClient = new QueryClient();
-
-  const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const [mode, setMode] = useState<"light" | "dark">(prefersDarkMode ? "dark" : "light");
+  const [mode, setMode] = useState<"light" | "dark">("light");
 
   useEffect(() => {
+    const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    setMode(prefersDarkMode ? "dark" : "light");
+
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e: MediaQueryListEvent) => {
       setMode(e.matches ? "dark" : "light");
