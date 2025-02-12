@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Link from "next/link";
 import ClientLayout from "./ClientLayout";
 import "./globals.css";
+import Navigation from "./Navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,12 +34,7 @@ export default function RootLayout({
             <h1 className="text-xl font-semibold text-orange-500">bash</h1>
             {/* <Link href="/rss">rss</Link> */}
           </div>
-          <nav className="mb-6 space-x-2 text-sm font-semibold underline">
-            <Link href="/">new</Link>
-            <Link href="/?sort=top">top</Link>
-            <Link href="/?sort=random">random</Link>
-            <Link href="/submit">submit</Link>
-          </nav>
+          <Navigation />
           {children}
         </body>
       </ClientLayout>
