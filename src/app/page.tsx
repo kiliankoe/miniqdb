@@ -27,7 +27,7 @@ export default function HomePage() {
     <div className="flex flex-col h-full justify-between gap-6">
       <ul>
         {quotes?.quotes.map((quote: ClientQuote) => (
-          <li key={quote.id} className="my-6">
+          <li key={quote.id} className="mb-6">
             <QuoteView quote={quote} />
           </li>
         ))}
