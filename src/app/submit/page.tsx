@@ -1,13 +1,12 @@
 "use client";
 
 import { Box, Button, TextField } from "@mui/material";
+import { orange } from "@mui/material/colors";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function NewQuotePage() {
-  return (
-    <AddForm />
-  );
+  return <AddForm />;
 }
 
 function AddForm() {
@@ -41,11 +40,11 @@ function AddForm() {
         multiline
         rows={4}
         variant="outlined"
-        // sx={{
-        //   "& .MuiOutlinedInput-root": {
-        //     bgcolor: (theme) => (theme.palette.mode === "dark" ? "grey.800" : "grey.100"),
-        //   },
-        // }}
+        sx={{
+          "& .MuiOutlinedInput-root": {
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? "grey.900" : "grey.100"),
+          },
+        }}
       />
       <Button
         type="submit"
@@ -54,12 +53,9 @@ function AddForm() {
         disabled={newQuote.length < 5}
         sx={{
           width: { md: "256px" },
-          bgcolor: (theme) => (theme.palette.mode === "dark" ? "orange.900" : "orange.400"),
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? orange[700] : orange[500]),
           "&:hover": {
-            bgcolor: (theme) => (theme.palette.mode === "dark" ? "orange.800" : "orange.500"),
-          },
-          "&:disabled": {
-            bgcolor: (theme) => (theme.palette.mode === "dark" ? "grey.700" : "grey.200"),
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? orange[800] : orange[600]),
           },
         }}
       >
