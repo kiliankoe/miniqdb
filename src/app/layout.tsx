@@ -24,6 +24,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const appName = process.env.MINIQDB_NAME === "" ? "miniqdb" : process.env.MINIQDB_NAME;
+
   return (
     <html lang="en">
       <ClientLayout>
@@ -31,7 +33,7 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased p-6 dark:bg-zinc-900 dark:text-white h-full`}
         >
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-orange-500">{process.env.MINIQDB_NAME ?? "miniqdb"}</h1>
+            <h1 className="text-xl font-semibold text-orange-500">{appName}</h1>
             {/* <Link href="/rss">rss</Link> */}
           </div>
           <Navigation />
