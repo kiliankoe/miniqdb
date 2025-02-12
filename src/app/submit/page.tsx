@@ -2,12 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { TextField, Button, Container, Box } from "@mui/material";
 
 export default function NewQuotePage() {
   return (
-    <div>
+    <Container maxWidth="sm">
       <AddForm />
-    </div>
+    </Container>
   );
 }
 
@@ -18,29 +19,54 @@ function AddForm() {
   const randomQuote = "random quote";
 
   return (
-    <form
+    <Box
+      component="form"
       onSubmit={async (e) => {
         e.preventDefault();
         // await addQuote(newQuote);
         // TODO: Do the reddit equivalent of auto-upvoting the quote
         router.push("/");
       }}
-      className="flex flex-col gap-4"
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+        mt: 4,
+      }}
     >
-      <textarea
+      <TextField
         name="quote"
         placeholder={randomQuote}
         value={newQuote}
         onChange={(e) => setNewQuote(e.target.value)}
-        className="h-32 bg-gray-200 p-2 dark:bg-gray-600"
+        multiline
+        rows={4}
+        variant="outlined"
+        // sx={{
+        //   "& .MuiOutlinedInput-root": {
+        //     bgcolor: (theme) => (theme.palette.mode === "dark" ? "grey.800" : "grey.100"),
+        //   },
+        // }}
       />
-      <button
+      <Button
         type="submit"
+        variant="contained"
+        disableElevation
         disabled={newQuote.length < 5}
-        className="mx-auto bg-orange-400 px-6 py-2 active:translate-y-0.5 disabled:bg-gray-200 disabled:opacity-50 md:w-64 dark:bg-amber-800 dark:disabled:bg-gray-700"
+        sx={{
+          width: { md: "256px" },
+          mx: "auto",
+          bgcolor: (theme) => (theme.palette.mode === "dark" ? "orange.900" : "orange.400"),
+          "&:hover": {
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? "orange.800" : "orange.500"),
+          },
+          "&:disabled": {
+            bgcolor: (theme) => (theme.palette.mode === "dark" ? "grey.700" : "grey.200"),
+          },
+        }}
       >
-        Hinzufügen
-      </button>
-    </form>
+        Submit
+      </Button>
+    </Box>
   );
 }
