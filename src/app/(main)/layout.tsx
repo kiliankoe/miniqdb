@@ -1,10 +1,22 @@
+import { orange } from "@mui/material/colors";
 import Navigation from "./Navigation";
+import { Typography } from "@mui/material";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const appName = process.env.MINIQDB_NAME === "" ? "miniqdb" : process.env.MINIQDB_NAME;
   return (
     <>
-      <h1 className="text-xl font-semibold text-orange-500">{appName}</h1>
+      <Typography
+        component="h1"
+        sx={{
+          fontSize: "20px",
+          fontFamily: "monospace",
+          fontWeight: 600,
+          color: orange[700],
+        }}
+      >
+        {appName}
+      </Typography>
       <Navigation />
       {children}
     </>
