@@ -19,7 +19,7 @@ function parseMarkdownLinks(text: string) {
     if (linkMatch) {
       const [, text, url] = linkMatch;
       return (
-        <a key={j} href={url} className="underline" target="_blank" rel="noopener noreferrer">
+        <a key={j} href={url} target="_blank" rel="noopener noreferrer">
           {text}
         </a>
       );
@@ -40,8 +40,9 @@ export function QuoteView({ quote }: { quote: ClientQuote }) {
             color="text.secondary"
             sx={{
               fontFamily: "monospace",
-              textDecoration: "underline",
+              textDecoration: "none",
               textUnderlineOffset: 1,
+              textDecorationColor: "white",
             }}
           >
             {createdAt.toLocaleString("de-DE", {

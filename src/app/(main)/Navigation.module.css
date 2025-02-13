@@ -1,0 +1,25 @@
+.nav {
+  margin-bottom: 24px;
+  display: flex;
+  gap: 8px;
+  font-family: monospace;
+  font-weight: 600;
+  text-underline-position: left;
+}
+
+.link {
+  --hover-color: #1f1f1f;
+
+  text-decoration: none;
+  color: #878787;
+}
+
+.link:hover {
+  color: var(--hover-color);
+}
+
+@media (prefers-color-scheme: dark) {
+  .link {
+    --hover-color: #eeeeee;
+  }
+}

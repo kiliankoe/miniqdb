@@ -1,11 +1,10 @@
 "use client";
 
+import type { Sort } from "@/app/api/quotes/Sort";
+import { QuoteView, type ClientQuote } from "@/shared/QuoteView";
 import { Pagination } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { QuoteView, type ClientQuote } from "@/shared/QuoteView";
-import type { Sort } from "@/app/api/quotes/Sort";
-
 export default function HomePage() {
   const router = useRouter();
   const params = useSearchParams();
@@ -24,10 +23,16 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex flex-col h-full justify-between gap-6">
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      justifyContent: "space-between",
+      gap: "24px",
+    }} >
       <ul>
         {quotes?.quotes.map((quote: ClientQuote) => (
-          <li key={quote.id} className="mb-6">
+          <li key={quote.id} style={{ marginBottom: "24px" }}>
             <QuoteView quote={quote} />
           </li>
         ))}
