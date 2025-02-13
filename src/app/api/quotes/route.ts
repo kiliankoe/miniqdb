@@ -1,12 +1,13 @@
+import { getServerSession } from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
+import { authOptions } from "../auth/[...nextauth]/authOptions";
 import { getQuotes } from "./GetQuotes";
 import type { Sort } from "./Sort";
 import { SortOpts } from "./Sort";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
+  console.log(session);
   // if (!session) {
   //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   // }
