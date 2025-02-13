@@ -1,10 +1,10 @@
 "use client";
 
-import { ThemeProvider } from "@mui/material/styles";
 import { createTheme, CssBaseline } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const queryClient = new QueryClient();
