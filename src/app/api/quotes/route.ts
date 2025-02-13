@@ -2,8 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/authOptions";
 import { getQuotes } from "./GetQuotes";
-import type { Sort } from "./Sort";
-import { SortOpts } from "./Sort";
+import { SortOpts, type Sort } from "./Sort";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -14,7 +13,7 @@ export async function GET(request: NextRequest) {
 
   const params = await request.nextUrl.searchParams;
 
-  const page = params.get("page") ?? "0";
+  const page = params.get("page") ?? "1";
   if (isNaN(parseInt(page)) || parseInt(page) < 0) {
     return NextResponse.json({ error: "Invalid page" }, { status: 400 });
   }
