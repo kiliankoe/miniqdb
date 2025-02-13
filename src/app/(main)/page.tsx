@@ -1,17 +1,19 @@
 "use client";
 
 import type { Sort } from "@/app/api/quotes/Sort";
+import { Loading } from "@/shared/Loading";
 import { QuoteView, type ClientQuote } from "@/shared/QuoteView";
 import { Pagination } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
+
 export default function HomePage() {
   const router = useRouter();
   const params = useSearchParams();
   const page = parseInt((params.get("page") ?? "1") as string);
   const limit = parseInt((params.get("limit") ?? "10") as string);
   const sort = (params.get("sort") ?? "newest") as Sort;
-  const { data: quotes } = useQuery({
+  const { data: quotes, isLoading } = useQuery({
     queryKey: ["quotes", page, limit, sort],
     queryFn: () => fetch(`/api/quotes?sort=${sort}&page=${page}&limit=${limit}`).then((res) => res.json()),
   });
@@ -21,6 +23,10 @@ export default function HomePage() {
     searchParams.set("page", newPage.toString());
     router.replace(`/?${searchParams.toString()}`);
   };
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div style={{

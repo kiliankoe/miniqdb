@@ -1,5 +1,6 @@
 "use client";
 
+import { Loading } from "@/shared/Loading";
 import { QuoteView } from "@/shared/QuoteView";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
@@ -29,7 +30,7 @@ export default function QuotePage() {
   }
 
   if (isLoading) {
-    return <div></div>;
+    return <Loading />;
   }
 
   if (!quote) {
