@@ -22,8 +22,8 @@ export const authOptions: AuthOptions = {
     }),
   ],
   pages: {
-    signIn: "/auth/signin",
-    verifyRequest: "/auth/verify-request", // Used for check email message
+    signIn: "/login",
+    verifyRequest: "/login/verify-request", // Used for check email message
   },
 };
 
