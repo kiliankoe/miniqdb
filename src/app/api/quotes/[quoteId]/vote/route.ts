@@ -1,16 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { submitVote } from "./SubmitVote";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
-export async function PUT(request: NextRequest) {
-  const params = await request.nextUrl.searchParams;
-  const quoteId = params.get("quoteId");
-  const authorId = params.get("authorId");
-  const vote = params.get("vote");
-  if (vote !== "1" && vote !== "-1") {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ quoteId: string }> }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { quoteId } = await params;
+
+  const body = await request.json();
+  if (body.vote === undefined) {
+    return NextResponse.json({ error: "Missing vote" }, { status: 400 });
+  }
+
+  if (body.vote !== 1 && body.vote !== 0 && body.vote !== -1) {
     return NextResponse.json({ error: "Invalid vote" }, { status: 400 });
   }
-  console.log(quoteId, authorId, vote);
-  // const quote = await getQuote(quoteId);
-  // const updatedQuote = await updateQuote(quoteId, { vote });
-  // return NextResponse.json(updatedQuote);
-  return NextResponse.json({ quoteId, authorId, vote });
+  await submitVote(quoteId, session.user.email, body.vote);
+  return NextResponse.json({ message: "Vote submitted" });
 }

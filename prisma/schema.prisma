@@ -29,6 +29,8 @@ model Vote {
   value     Int // 1 or -1
   author    String
   createdAt DateTime @default(now())
+
+  @@unique([quoteId, author], name: "quoteId_author")
 }
 
 model Account {

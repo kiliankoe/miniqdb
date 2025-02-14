@@ -45,7 +45,7 @@ export function QuoteView({ quote }: { quote: QuoteResponse }) {
             })}
           </Typography>
         </Link>
-        <VoteView score={quote.score} vote={quote.vote} />
+        <VoteView score={quote.score} vote={quote.vote} quoteId={quote.id} />
       </Stack>
       <div>
         {quote.text?.split("\\n").map((line, i) => (
@@ -59,10 +59,14 @@ export function QuoteView({ quote }: { quote: QuoteResponse }) {
   );
 }
 
-function VoteView({ score, vote }: { score: number; vote?: number }) {
+function VoteView({ score, vote, quoteId }: { score: number; vote?: number; quoteId: number }) {
   return (
     <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
       <IconButton
+        onClick={() => fetch(`/api/quotes/${quoteId}/vote`, {
+          method: "PUT",
+          body: JSON.stringify({ vote: vote === 1 ? 0 : 1 }),
+        })}
         size="small"
         sx={{
           "& .MuiSvgIcon-root": {
@@ -76,6 +80,10 @@ function VoteView({ score, vote }: { score: number; vote?: number }) {
         {score}
       </Typography>
       <IconButton
+        onClick={() => fetch(`/api/quotes/${quoteId}/vote`, {
+          method: "PUT",
+          body: JSON.stringify({ vote: vote === -1 ? 0 : -1 }),
+        })}
         size="small"
         sx={{
           "& .MuiSvgIcon-root": {
