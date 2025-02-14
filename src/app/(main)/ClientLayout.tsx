@@ -6,8 +6,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
+const queryClient = new QueryClient();
+
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
-  const queryClient = new QueryClient();
   const [mode, setMode] = useState<"light" | "dark">("light");
 
   useEffect(() => {

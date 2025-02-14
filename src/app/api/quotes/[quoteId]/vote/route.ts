@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { submitVote } from "./SubmitVote";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { getQuote } from "../../GetQuotes";
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ quoteId: string }> }) {
   const session = await getServerSession(authOptions);
@@ -20,5 +21,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Invalid vote" }, { status: 400 });
   }
   await submitVote(quoteId, session.user.email, body.vote);
-  return NextResponse.json({ message: "Vote submitted" });
+  const quote = await getQuote(quoteId);
+  return NextResponse.json(quote);
 }

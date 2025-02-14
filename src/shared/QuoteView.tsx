@@ -1,10 +1,8 @@
 import type { QuoteResponse } from "@/app/api/quotes/QuoteResponse";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { IconButton, Stack, Typography } from "@mui/material";
-import { blue, orange } from "@mui/material/colors";
+import { Stack, Typography } from "@mui/material";
 import Link from "next/link";
 import React from "react";
+import { VoteView } from "./VoteView";
 
 function parseMarkdownLinks(text: string) {
   return text.split(/(\[.*?\]\(.*?\))/).map((segment, j) => {
@@ -55,44 +53,6 @@ export function QuoteView({ quote }: { quote: QuoteResponse }) {
           </React.Fragment>
         ))}
       </div>
-    </Stack>
-  );
-}
-
-function VoteView({ score, vote, quoteId }: { score: number; vote?: number; quoteId: number }) {
-  return (
-    <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
-      <IconButton
-        onClick={() => fetch(`/api/quotes/${quoteId}/vote`, {
-          method: "PUT",
-          body: JSON.stringify({ vote: vote === 1 ? 0 : 1 }),
-        })}
-        size="small"
-        sx={{
-          "& .MuiSvgIcon-root": {
-            color: vote === 1 ? orange[400] : "text.secondary",
-          },
-        }}
-      >
-        <ExpandLessIcon />
-      </IconButton>
-      <Typography variant="body1" sx={{ fontFamily: "monospace", width: "25px", textAlign: "center" }}>
-        {score}
-      </Typography>
-      <IconButton
-        onClick={() => fetch(`/api/quotes/${quoteId}/vote`, {
-          method: "PUT",
-          body: JSON.stringify({ vote: vote === -1 ? 0 : -1 }),
-        })}
-        size="small"
-        sx={{
-          "& .MuiSvgIcon-root": {
-            color: vote === -1 ? blue[400] : "text.secondary",
-          },
-        }}
-      >
-        <ExpandMoreIcon />
-      </IconButton>
     </Stack>
   );
 }
