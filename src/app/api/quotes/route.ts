@@ -1,15 +1,8 @@
-import { getServerSession } from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/authOptions";
 import { getQuotes } from "./GetQuotes";
 import { SortOpts, type Sort } from "./Sort";
 
 export async function GET(request: NextRequest) {
-  // const session = await getServerSession(authOptions);
-  // if (!session) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
-
   const params = await request.nextUrl.searchParams;
 
   const page = params.get("page") ?? "1";
