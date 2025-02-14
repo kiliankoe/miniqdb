@@ -61,12 +61,13 @@ export default function Login() {
             }}
           />
 
-          <Button
-            disableElevation
+          {process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT && (
+            <Button
+              disableElevation
             fullWidth
             variant="contained"
             onClick={() => {
-              router.push("/login/hr");
+              router.push("/login/nothing-to-see-here");
             }}
             sx={{
               mt: 3,
@@ -76,22 +77,28 @@ export default function Login() {
             }}
             disabled={isSubmitting}
           >
-            I work in HR
-          </Button>
+              {process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT}
+            </Button>
+          )}
 
           <Button
             disableElevation
             fullWidth
             type="submit"
-            variant="text"
+            variant={process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT ? "text" : "contained"}
             sx={{
               mt: 3,
               textTransform: "none",
-              color: orange[700],
+              ...(process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT ? {
+                color: orange[700],
+              } : {
+                backgroundColor: orange[700],
+                color: "white",
+              }),
             }}
             disabled={isSubmitting}
           >
-            I promise I don&apos;t work in HR
+            {process.env.NEXT_PUBLIC_LOGIN_BUTTON_TEXT ?? "Login"}
           </Button>
 
           {message && (
