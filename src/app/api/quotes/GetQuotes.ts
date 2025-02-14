@@ -84,29 +84,42 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
     } satisfies QuotesResponse;
   }
 
-  const quotes = await db.quote.findMany({
-    skip: (page - 1) * limit,
-    take: limit,
-    orderBy: (() => {
-      switch (sort) {
-        case "newest":
-          return { createdAt: "desc" };
-        case "oldest":
-          return { createdAt: "asc" };
-        case "top":
-          return {
-            votes: {
-              _count: "desc",
-            },
-          };
-        default:
-          return { createdAt: "desc" };
-      }
-    })(),
-    include: {
-      votes: true,
-    },
-  });
+  let quotes;
+  if (sort === "top") {
+    // FIXME: This fetches all quotes and sorts them. Instead of this, the Quote table should have a score column that
+    // is updated when a vote is cast. Or maybe have a db view that aggregates this?
+    const allQuotes = await db.quote.findMany({
+      include: {
+        votes: true,
+      },
+    });
+
+    allQuotes.sort((a, b) => {
+      const scoreA = a.votes.reduce((acc, vote) => acc + vote.value, 0);
+      const scoreB = b.votes.reduce((acc, vote) => acc + vote.value, 0);
+      return scoreB - scoreA;
+    });
+
+    quotes = allQuotes.slice((page - 1) * limit, page * limit);
+  } else {
+    quotes = await db.quote.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: (() => {
+        switch (sort) {
+          case "newest":
+            return { createdAt: "desc" };
+          case "oldest":
+            return { createdAt: "asc" };
+          default:
+            return { createdAt: "desc" };
+        }
+      })(),
+      include: {
+        votes: true,
+      },
+    });
+  }
 
   return {
     quotes: quotes.map((quote) => ({
