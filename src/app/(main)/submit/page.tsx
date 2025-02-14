@@ -2,6 +2,7 @@
 
 import { Box, Button, TextField } from "@mui/material";
 import { orange } from "@mui/material/colors";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,6 +12,7 @@ export default function NewQuotePage() {
 
 function AddForm() {
   const router = useRouter();
+  const session = useSession();
   const [newQuote, setNewQuote] = useState("");
 
   const randomQuote = "random quote";
@@ -20,8 +22,10 @@ function AddForm() {
       component="form"
       onSubmit={async (e) => {
         e.preventDefault();
-        // await addQuote(newQuote);
-        // TODO: Do the reddit equivalent of auto-upvoting the quote
+        await fetch("/api/quotes", {
+          method: "POST",
+          body: JSON.stringify({ quote: newQuote, author: session.data?.user?.email }),
+        });
         router.push("/");
       }}
       sx={{

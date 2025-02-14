@@ -2,10 +2,11 @@
 
 import type { Sort } from "@/app/api/quotes/Sort";
 import { Loading } from "@/shared/Loading";
-import { QuoteView, type ClientQuote } from "@/shared/QuoteView";
+import { QuoteView } from "@/shared/QuoteView";
 import { Pagination } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
+import type { QuoteResponse } from "../api/quotes/QuoteResponse";
 
 export default function HomePage() {
   const router = useRouter();
@@ -37,7 +38,7 @@ export default function HomePage() {
       gap: "24px",
     }} >
       <ul>
-        {quotes?.quotes.map((quote: ClientQuote) => (
+        {quotes?.quotes.map((quote: QuoteResponse) => (
           <li key={quote.id} style={{ marginBottom: "24px" }}>
             <QuoteView quote={quote} />
           </li>

@@ -1,10 +1,13 @@
+export type QuoteResponse = {
+  id: number;
+  createdAt: Date;
+  score: number;
+  vote: number;
+  text: string | null;
+};
+
 export type QuotesResponse = {
-  quotes: {
-    id: number;
-    createdAt: Date;
-    score: number;
-    text: string | null;
-  }[];
+  quotes: QuoteResponse[];
   totalCount: number;
   pageCount: number;
 };

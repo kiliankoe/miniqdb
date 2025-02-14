@@ -1,17 +1,10 @@
+import type { QuoteResponse } from "@/app/api/quotes/QuoteResponse";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { IconButton, Stack, Typography } from "@mui/material";
 import { blue, orange } from "@mui/material/colors";
-import type { Quote } from "@prisma/client";
 import Link from "next/link";
 import React from "react";
-
-// This is such a hack lol, but I want to keep the generated data type.
-export type ClientQuote = Pick<Quote, "id" | "text"> & {
-  // Unfortunately these don't survive json serialization
-  createdAt: string;
-  score: number;
-};
 
 function parseMarkdownLinks(text: string) {
   return text.split(/(\[.*?\]\(.*?\))/).map((segment, j) => {
@@ -28,7 +21,7 @@ function parseMarkdownLinks(text: string) {
   });
 }
 
-export function QuoteView({ quote }: { quote: ClientQuote }) {
+export function QuoteView({ quote }: { quote: QuoteResponse }) {
   const createdAt = new Date(quote.createdAt);
 
   return (
@@ -52,7 +45,7 @@ export function QuoteView({ quote }: { quote: ClientQuote }) {
             })}
           </Typography>
         </Link>
-        <VoteView score={quote.score} />
+        <VoteView score={quote.score} vote={quote.vote} />
       </Stack>
       <div>
         {quote.text?.split("\\n").map((line, i) => (
@@ -66,9 +59,9 @@ export function QuoteView({ quote }: { quote: ClientQuote }) {
   );
 }
 
-function VoteView({ score, vote }: { score: number; vote?: 1 | -1 }) {
+function VoteView({ score, vote }: { score: number; vote?: number }) {
   return (
-    <Stack direction="row" spacing={1} alignItems="center">
+    <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
       <IconButton
         size="small"
         sx={{
@@ -79,7 +72,7 @@ function VoteView({ score, vote }: { score: number; vote?: 1 | -1 }) {
       >
         <ExpandLessIcon />
       </IconButton>
-      <Typography variant="body1" sx={{ fontFamily: "monospace" }}>
+      <Typography variant="body1" sx={{ fontFamily: "monospace", width: "25px", textAlign: "center" }}>
         {score}
       </Typography>
       <IconButton
