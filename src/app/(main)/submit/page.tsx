@@ -15,8 +15,6 @@ function AddForm() {
   const session = useSession();
   const [newQuote, setNewQuote] = useState("");
 
-  const randomQuote = "random quote";
-
   return (
     <Box
       component="form"
@@ -38,7 +36,10 @@ function AddForm() {
     >
       <TextField
         name="quote"
-        placeholder={randomQuote}
+        placeholder={`<i8b4uUnderground> d-_-b
+<BonyNoMore> how u make that inverted b?
+<BonyNoMore> wait
+<BonyNoMore> never mind`}
         value={newQuote}
         onChange={(e) => setNewQuote(e.target.value)}
         multiline
@@ -57,10 +58,8 @@ function AddForm() {
         disabled={newQuote.length < 5}
         sx={{
           width: { md: "256px" },
-          bgcolor: (theme) => (theme.palette.mode === "dark" ? orange[700] : orange[500]),
-          "&:hover": {
-            bgcolor: (theme) => (theme.palette.mode === "dark" ? orange[800] : orange[600]),
-          },
+          backgroundColor: orange[700],
+          color: "white",
         }}
       >
         Submit
