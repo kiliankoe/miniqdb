@@ -3,14 +3,10 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { orange, red } from '@mui/material/colors';
 import Link from 'next/link';
 
-export default async function LoginErrorPage({
-  searchParams,
-}: {
-  searchParams: { error?: string };
-}) {
-  const params = await searchParams;
-  const errorMessage = params.error
-    ? decodeURIComponent(params.error)
+export default async function LoginErrorPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const { error } = await searchParams;
+  const errorMessage = error
+    ? decodeURIComponent(error)
     : 'An unknown error occurred';
 
   return (
@@ -54,6 +50,7 @@ export default async function LoginErrorPage({
                   mt: 3,
                   textTransform: 'none',
                   backgroundColor: orange[700],
+                  color: "white",
                 }}
               >
                 Try Again
