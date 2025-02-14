@@ -2,6 +2,7 @@
 
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
 import { orange } from "@mui/material/colors";
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -17,7 +18,8 @@ export default function Login() {
     setIsSubmitting(true);
     setMessage("");
 
-    // TODO: Implement your magic link authentication logic here
+    // "email" is the provider ID
+    await signIn("email", { email, callbackUrl: "/" });
 
     setIsSubmitting(false);
     setMessage("Please check your inbox.");
@@ -64,7 +66,7 @@ export default function Login() {
             fullWidth
             variant="contained"
             onClick={() => {
-              router.push("/hr");
+              router.push("/login/hr");
             }}
             sx={{
               mt: 3,

@@ -22,6 +22,30 @@ export const authOptions: AuthOptions = {
   ],
   pages: {
     signIn: "/login",
-    verifyRequest: "/login/verify-request", // Used for check email message
+    verifyRequest: "/login/verify-request",
+    error: "/login/error",
+  },
+  session: {
+    strategy: "jwt",
+  },
+  callbacks: {
+    async signIn({ user }) {
+      if (user.email) {
+        if (verifyEmail(user.email)) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+      return false;
+    },
   },
 };
+
+function verifyEmail(email: string) {
+  const domain = email.split("@")[1];
+  if (!process.env.ALLOWED_DOMAINS) {
+    return true;
+  }
+  return process.env.ALLOWED_DOMAINS.split(",").includes(domain);
+}
