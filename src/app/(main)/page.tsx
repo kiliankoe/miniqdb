@@ -43,7 +43,7 @@ export default function HomePage() {
           </li>
         ))}
       </ul>
-      {sort !== "random" && (
+      {sort !== "random" && quotes?.pageCount > 1 && (
         <Pagination count={quotes?.pageCount ?? 0} page={page} size="small" onChange={handlePageChange} />
       )}
     </div>
