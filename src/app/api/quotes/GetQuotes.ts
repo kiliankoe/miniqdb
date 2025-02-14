@@ -27,6 +27,38 @@ export async function getQuotes(sort: Sort, page: number, limit: number) {
   const totalCount = await db.quote.count();
 
   if (sort === "random") {
+    if (totalCount <= limit) {
+      const quotes = await db.quote.findMany({
+        take: totalCount,
+        orderBy: {
+          id: 'asc'
+        },
+        include: {
+          _count: {
+            select: { votes: true },
+          },
+          votes: {
+            select: {
+              value: true,
+            },
+          },
+        },
+      });
+
+      const shuffledQuotes = quotes.sort(() => Math.random() - 0.5);
+
+      return {
+        quotes: shuffledQuotes.map((quote) => ({
+          id: quote.id,
+          createdAt: quote.createdAt,
+          score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
+          text: quote.text,
+        })),
+        totalCount,
+        pageCount: Math.ceil(totalCount / limit),
+      } satisfies QuotesResponse;
+    }
+
     const skip = Math.floor(Math.random() * (totalCount - limit + 1));
     const quotes = await db.quote.findMany({
       skip,
