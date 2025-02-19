@@ -46,7 +46,7 @@ export function QuoteView({ quote }: { quote: QuoteResponse }) {
         <VoteView score={quote.score} vote={quote.vote} quoteId={quote.id} />
       </Stack>
       <div>
-        {quote.text?.split("\\n").map((line, i) => (
+        {quote.text?.split("\n").map((line, i) => (
           <React.Fragment key={i}>
             {parseMarkdownLinks(line)}
             <br />
