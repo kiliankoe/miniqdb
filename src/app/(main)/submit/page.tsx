@@ -36,10 +36,6 @@ function AddForm() {
     >
       <TextField
         name="quote"
-        placeholder={`<i8b4uUnderground> d-_-b
-<BonyNoMore> how u make that inverted b?
-<BonyNoMore> wait
-<BonyNoMore> never mind`}
         value={newQuote}
         onChange={(e) => setNewQuote(e.target.value)}
         multiline
