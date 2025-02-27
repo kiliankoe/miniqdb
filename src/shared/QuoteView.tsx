@@ -23,7 +23,15 @@ export function QuoteView({ quote }: { quote: QuoteResponse }) {
   const createdAt = new Date(quote.createdAt);
 
   return (
-    <Stack direction="column" spacing={0}>
+    <Stack
+      direction="column"
+      spacing={0}
+      maxWidth={{
+        xs: '100%',
+        sm: '90%',
+        md: '80%'
+      }}
+    >
       <Stack direction="row" spacing={1} alignItems="center">
         <Link href={`/${quote.id}`}>
           <Typography
