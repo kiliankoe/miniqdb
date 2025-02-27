@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, TextField, Typography } from "@mui/material";
 import { orange } from "@mui/material/colors";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -60,6 +60,28 @@ function AddForm() {
       >
         Submit
       </Button>
+
+      <Typography variant="body2" color="text.secondary" component="div" sx={{ paddingTop: 2 }}>
+        Examples:
+        <ul style={{ listStyleType: "disc", paddingLeft: 14, paddingTop: 6 }}>
+          <li>
+            <Typography variant="body2" color="text.secondary">
+              &quot;Kilian, how do I make your sausage warm?&quot; - Shawn
+            </Typography>
+          </li>
+          <li>
+            <Typography variant="body2" color="text.secondary">
+              &quot;Das sind Manager, die wollen gebrochen werden.&quot; - Dirk
+            </Typography>
+          </li>
+          <li>
+            <Typography variant="body2" color="text.secondary">
+              Vincent: &quot;Maybe I should just check in the morning if I’m stupid or not.&quot;<br />
+              Shyam: &quot;Most likely that will be the case.&quot;
+            </Typography>
+          </li>
+        </ul>
+      </Typography>
     </Box>
   );
 }
