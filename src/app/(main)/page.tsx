@@ -1,11 +1,13 @@
 "use client";
 
 import type { Sort } from "@/app/api/quotes/Sort";
+import { NewSinceDivider } from "@/components/NewSinceDivider";
 import { Loading } from "@/shared/Loading";
 import { QuoteView } from "@/shared/QuoteView";
 import { Pagination } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import type { QuoteResponse } from "../api/quotes/QuoteResponse";
 
 export default function HomePage() {
@@ -14,6 +16,9 @@ export default function HomePage() {
   const page = parseInt((params.get("page") ?? "1") as string);
   const limit = parseInt((params.get("limit") ?? "10") as string);
   const sort = (params.get("sort") ?? "newest") as Sort;
+  const [lastVisit, setLastVisit] = useState<string | null>(null);
+  const [dividerIndex, setDividerIndex] = useState<number | null>(null);
+
   const { data, isLoading } = useQuery({
     queryKey: ["quotes", page, limit, sort],
     queryFn: () =>
@@ -25,8 +30,52 @@ export default function HomePage() {
   const quotes = data?.quotes;
   const isAdmin = data?.isAdmin;
 
+  // last visit tracking
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Only track on the first page with newest sort
+    if (page === 1 && sort === "newest") {
+      const storedLastVisit = localStorage.getItem("lastVisit");
+      setLastVisit(storedLastVisit);
+
+      if (data?.quotes && data.quotes.length > 0) {
+        const newestQuoteTime = new Date(
+          data.quotes[0].createdAt,
+        ).toISOString();
+        localStorage.setItem("lastVisit", newestQuoteTime);
+      }
+    }
+  }, [page, sort, data]);
+
+  // calculate last visit divider position
+  useEffect(() => {
+    if (
+      page !== 1 ||
+      sort !== "newest" ||
+      !lastVisit ||
+      !quotes ||
+      quotes.length === 0
+    ) {
+      setDividerIndex(null);
+      return;
+    }
+
+    const lastVisitDate = new Date(lastVisit);
+    const newQuotesCount = quotes.findIndex(
+      (quote: QuoteResponse) => new Date(quote.createdAt) <= lastVisitDate,
+    );
+
+    // Only show divider if there are both new and old quotes
+    if (newQuotesCount > 0 && newQuotesCount < quotes.length) {
+      setDividerIndex(newQuotesCount);
+    } else {
+      setDividerIndex(null);
+    }
+  }, [quotes, lastVisit, page, sort]);
+
   const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
+    _event: React.ChangeEvent<unknown>,
     newPage: number,
   ) => {
     const searchParams = new URLSearchParams(params.toString());
@@ -49,10 +98,17 @@ export default function HomePage() {
       }}
     >
       <ul>
-        {quotes?.map((quote: QuoteResponse) => (
-          <li key={quote.id} style={{ marginBottom: "24px" }}>
-            <QuoteView quote={quote} isAdmin={isAdmin} />
-          </li>
+        {quotes?.map((quote: QuoteResponse, index: number) => (
+          <>
+            {dividerIndex === index && (
+              <li key={`divider-${quote.id}`} style={{ listStyle: "none" }}>
+                <NewSinceDivider />
+              </li>
+            )}
+            <li key={quote.id} style={{ marginBottom: "24px" }}>
+              <QuoteView quote={quote} isAdmin={isAdmin} />
+            </li>
+          </>
         ))}
       </ul>
       {sort !== "random" && data?.pageCount > 1 && (
