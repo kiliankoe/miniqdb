@@ -7,7 +7,7 @@ import { QuoteView } from "@/components/QuoteView";
 import { Pagination } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { QuoteResponse } from "../api/quotes/QuoteResponse";
 
 export default function HomePage() {
@@ -99,16 +99,16 @@ export default function HomePage() {
     >
       <ul>
         {quotes?.map((quote: QuoteResponse, index: number) => (
-          <>
+          <React.Fragment key={quote.id}>
             {dividerIndex === index && (
-              <li key={`divider-${quote.id}`} style={{ listStyle: "none" }}>
+              <li style={{ listStyle: "none" }}>
                 <NewSinceDivider />
               </li>
             )}
-            <li key={quote.id} style={{ marginBottom: "24px" }}>
+            <li style={{ marginBottom: "24px" }}>
               <QuoteView quote={quote} isAdmin={isAdmin} />
             </li>
-          </>
+          </React.Fragment>
         ))}
       </ul>
       {sort !== "random" && data?.pageCount > 1 && (
