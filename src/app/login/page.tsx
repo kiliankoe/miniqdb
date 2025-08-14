@@ -25,6 +25,12 @@ export default function Login() {
     setMessage("Please check your inbox.");
   };
 
+  const handleDevLogin = async () => {
+    setIsSubmitting(true);
+    await signIn("credentials", { callbackUrl: "/" });
+    setIsSubmitting(false);
+  };
+
   return (
     <Container maxWidth="sm">
       <Box
@@ -105,6 +111,24 @@ export default function Login() {
             <Typography color="text.secondary" align="center" sx={{ mt: 2 }}>
               {message}
             </Typography>
+          )}
+
+          {process.env.NODE_ENV === "development" && (
+            <Button
+              disableElevation
+              fullWidth
+              variant="outlined"
+              onClick={handleDevLogin}
+              sx={{
+                mt: 2,
+                textTransform: "none",
+                borderColor: "grey.500",
+                color: "text.primary",
+              }}
+              disabled={isSubmitting}
+            >
+              Continue as Dev User (Development Only)
+            </Button>
           )}
         </form>
       </Box>
