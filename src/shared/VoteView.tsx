@@ -1,6 +1,9 @@
 "use client";
 
-import type { QuoteResponse, QuotesResponse } from "@/app/api/quotes/QuoteResponse";
+import type {
+  QuoteResponse,
+  QuotesResponse,
+} from "@/app/api/quotes/QuoteResponse";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { IconButton, Stack, Typography } from "@mui/material";
@@ -8,7 +11,15 @@ import { blue, orange } from "@mui/material/colors";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import React from "react";
 
-export function VoteView({ score, vote, quoteId }: { score: number; vote?: number; quoteId: number }) {
+export function VoteView({
+  score,
+  vote,
+  quoteId,
+}: {
+  score: number;
+  vote?: number;
+  quoteId: number;
+}) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -26,38 +37,59 @@ export function VoteView({ score, vote, quoteId }: { score: number; vote?: numbe
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: ["quotes"] });
 
-      // Change undefined to null when getting previous data
-      const previousQuotes = queryClient.getQueryData<QuotesResponse>(["quotes"]) ?? null;
+      // Store all previous states
+      const previousStates: Array<{ queryKey: any; data: any }> = [];
 
-      // Optimistically update to the new value
-      queryClient.setQueryData<QuotesResponse>(["quotes"], (old) => {
-        if (!old?.quotes) return old;
+      // Update all cached quote lists that might contain this quote
+      queryClient
+        .getQueryCache()
+        .findAll({ queryKey: ["quotes"] })
+        .forEach((query) => {
+          const queryKey = query.queryKey;
+          const currentData =
+            queryClient.getQueryData<QuotesResponse>(queryKey);
 
-        const newQuotes = old.quotes.map((quote: QuoteResponse) => {
-          if (quote.id === quoteId) {
-            return { ...quote, score: quote.score + (newVote - (vote ?? 0)), vote: newVote };
+          if (currentData?.quotes) {
+            previousStates.push({ queryKey, data: currentData });
+
+            // Optimistically update the cache without invalidating
+            queryClient.setQueryData<QuotesResponse>(queryKey, (old) => {
+              if (!old?.quotes) return old;
+
+              const newQuotes = old.quotes.map((quote: QuoteResponse) => {
+                if (quote.id === quoteId) {
+                  return {
+                    ...quote,
+                    score: quote.score + (newVote - (vote ?? 0)),
+                    vote: newVote,
+                  };
+                }
+                return quote;
+              });
+              return { ...old, quotes: newQuotes };
+            });
           }
-          return quote;
         });
-        return { ...old, quotes: newQuotes };
-      });
 
-      return { previousQuotes };
+      return { previousStates };
     },
     onError: (err, newVote, context) => {
-      if (context) {
-        queryClient.setQueryData(["quotes"], context.previousQuotes);
+      // Restore all previous states on error
+      if (context?.previousStates) {
+        context.previousStates.forEach(({ queryKey, data }) => {
+          queryClient.setQueryData(queryKey, data);
+        });
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+    onSuccess: (data) => {
+      // Update was successful, the optimistic updates remain
+      // Don't invalidate queries - just let the optimistic updates stand
     },
   });
 
   const handleVote = (newVote: number) => {
     mutation.mutate(newVote);
   };
-
 
   const getVoteColor = (voteValue: number | undefined) => {
     if (voteValue === 1) return orange[400];
@@ -66,7 +98,12 @@ export function VoteView({ score, vote, quoteId }: { score: number; vote?: numbe
   };
 
   return (
-    <Stack direction="row" spacing={1} alignItems="center" justifyContent="center">
+    <Stack
+      direction="row"
+      spacing={1}
+      alignItems="center"
+      justifyContent="center"
+    >
       <IconButton
         onClick={() => handleVote(vote === 1 ? 0 : 1)}
         size="small"
@@ -78,7 +115,10 @@ export function VoteView({ score, vote, quoteId }: { score: number; vote?: numbe
       >
         <ExpandLessIcon />
       </IconButton>
-      <Typography variant="body1" sx={{ fontFamily: "monospace", width: "25px", textAlign: "center" }}>
+      <Typography
+        variant="body1"
+        sx={{ fontFamily: "monospace", width: "25px", textAlign: "center" }}
+      >
         {score}
       </Typography>
       <IconButton
