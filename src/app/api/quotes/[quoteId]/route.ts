@@ -49,3 +49,33 @@ export async function PATCH(
     return NextResponse.json({ error: "Quote not found" }, { status: 404 });
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ quoteId: string }> },
+) {
+  const session = await getServerSession(authOptions);
+
+  if (session?.user?.email !== process.env.ADMIN_EMAIL) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  }
+
+  const { quoteId } = await params;
+  const db = new PrismaClient();
+
+  try {
+    await db.vote.deleteMany({
+      where: { quoteId: parseInt(quoteId) },
+    });
+    const deletedQuote = await db.quote.delete({
+      where: { id: parseInt(quoteId) },
+    });
+
+    return NextResponse.json({
+      message: "Quote deleted successfully",
+      id: deletedQuote.id,
+    });
+  } catch {
+    return NextResponse.json({ error: "Quote not found" }, { status: 404 });
+  }
+}

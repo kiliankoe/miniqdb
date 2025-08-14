@@ -1,10 +1,16 @@
 "use client";
 
 import type { QuoteResponse } from "@/app/api/quotes/QuoteResponse";
+import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Stack,
   TextField,
@@ -41,6 +47,7 @@ export function QuoteView({
   const createdAt = new Date(quote.createdAt);
   const [isEditing, setIsEditing] = useState(false);
   const [editedText, setEditedText] = useState(quote.text || "");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
@@ -68,6 +75,29 @@ export function QuoteView({
   const handleCancel = () => {
     setIsEditing(false);
     setEditedText(quote.text || "");
+  };
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/quotes/${quote.id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete quote");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      setDeleteDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+      if (window.location.pathname === `/${quote.id}`) {
+        window.location.href = "/";
+      }
+    },
+  });
+
+  const handleDelete = () => {
+    deleteMutation.mutate();
   };
 
   return (
@@ -102,13 +132,22 @@ export function QuoteView({
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <VoteView score={quote.score} vote={quote.vote} quoteId={quote.id} />
           {isAdmin && !isEditing && (
-            <IconButton
-              size="small"
-              onClick={() => setIsEditing(true)}
-              sx={{ color: "text.secondary" }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
+            <>
+              <IconButton
+                size="small"
+                onClick={() => setIsEditing(true)}
+                sx={{ color: "text.secondary" }}
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={() => setDeleteDialogOpen(true)}
+                sx={{ color: "text.secondary" }}
+              >
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+            </>
           )}
         </Box>
       </Stack>
@@ -167,6 +206,42 @@ export function QuoteView({
           ))}
         </div>
       )}
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Quote?</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete this quote? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            sx={{ color: "text.primary" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            autoFocus
+            disabled={deleteMutation.isPending}
+            sx={{
+              color: orange[700],
+              "&:hover": {
+                backgroundColor: "rgba(251, 140, 0, 0.04)",
+              },
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }
