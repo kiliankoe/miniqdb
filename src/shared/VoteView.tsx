@@ -35,9 +35,40 @@ export function VoteView({
     onMutate: async (newVote: number) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries({ queryKey: ["quotes"] });
+      await queryClient.cancelQueries({ queryKey: ["quote", String(quoteId)] });
 
       // Store all previous states
       const previousStates: Array<{ queryKey: any; data: any }> = [];
+
+      // Update single quote cache for quote detail page
+      const singleQuoteKey = ["quote", String(quoteId)];
+      const singleQuoteData = queryClient.getQueryData<{
+        quote: QuoteResponse;
+        isAdmin: boolean;
+      }>(singleQuoteKey);
+
+      if (singleQuoteData?.quote) {
+        previousStates.push({
+          queryKey: singleQuoteKey,
+          data: singleQuoteData,
+        });
+
+        queryClient.setQueryData<{ quote: QuoteResponse; isAdmin: boolean }>(
+          singleQuoteKey,
+          (old) => {
+            if (!old?.quote) return old;
+
+            return {
+              ...old,
+              quote: {
+                ...old.quote,
+                score: old.quote.score + (newVote - (vote ?? 0)),
+                vote: newVote,
+              },
+            };
+          },
+        );
+      }
 
       // Update all cached quote lists that might contain this quote
       queryClient
