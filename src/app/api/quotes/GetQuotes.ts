@@ -16,7 +16,7 @@ export async function getQuote(quoteId: string, author?: string) {
   }
 
   const userVote = author
-    ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+    ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
     : 0;
 
   return {
@@ -28,7 +28,12 @@ export async function getQuote(quoteId: string, author?: string) {
   };
 }
 
-export async function getQuotes(sort: Sort, page: number, limit: number, author?: string) {
+export async function getQuotes(
+  sort: Sort,
+  page: number,
+  limit: number,
+  author?: string,
+) {
   const db = new PrismaClient();
   const totalCount = await db.quote.count();
 
@@ -37,7 +42,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
       const quotes = await db.quote.findMany({
         take: totalCount,
         orderBy: {
-          id: 'asc'
+          id: "asc",
         },
         include: {
           votes: true,
@@ -52,7 +57,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
           createdAt: quote.createdAt,
           score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
           vote: author
-            ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+            ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
             : 0,
           text: quote.text,
         })),
@@ -75,7 +80,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
         createdAt: quote.createdAt,
         score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
         vote: author
-          ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+          ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
           : 0,
         text: quote.text,
       })),
@@ -84,42 +89,70 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
     } satisfies QuotesResponse;
   }
 
-  let quotes;
   if (sort === "top") {
-    // FIXME: This fetches all quotes and sorts them. Instead of this, the Quote table should have a score column that
-    // is updated when a vote is cast. Or maybe have a db view that aggregates this?
-    const allQuotes = await db.quote.findMany({
-      include: {
-        votes: true,
-      },
+    // Use the view to get quotes sorted by score without having to fetch all quotes and sort here
+    const quotesWithScores = await db.$queryRaw<
+      Array<{
+        id: number;
+        text: string;
+        createdAt: Date;
+        updatedAt: Date;
+        author: string;
+        score: number;
+      }>
+    >`
+      SELECT * FROM quotes_with_score
+      LIMIT ${limit} OFFSET ${(page - 1) * limit}
+    `;
+
+    // Fetch votes for the current user
+    const quoteIds = quotesWithScores.map((q) => q.id);
+    const votes =
+      author && quoteIds.length > 0
+        ? await db.vote.findMany({
+            where: {
+              quoteId: { in: quoteIds },
+              author: author,
+            },
+          })
+        : [];
+
+    const mappedQuotes = quotesWithScores.map((quote) => {
+      const userVote = votes.find((v) => v.quoteId === quote.id);
+      return {
+        id: quote.id,
+        text: quote.text,
+        createdAt: quote.createdAt,
+        score: Number(quote.score),
+        vote: userVote?.value ?? 0,
+      };
     });
 
-    allQuotes.sort((a, b) => {
-      const scoreA = a.votes.reduce((acc, vote) => acc + vote.value, 0);
-      const scoreB = b.votes.reduce((acc, vote) => acc + vote.value, 0);
-      return scoreB - scoreA;
-    });
-
-    quotes = allQuotes.slice((page - 1) * limit, page * limit);
-  } else {
-    quotes = await db.quote.findMany({
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: (() => {
-        switch (sort) {
-          case "newest":
-            return { createdAt: "desc" };
-          case "oldest":
-            return { createdAt: "asc" };
-          default:
-            return { createdAt: "desc" };
-        }
-      })(),
-      include: {
-        votes: true,
-      },
-    });
+    return {
+      quotes: mappedQuotes,
+      totalCount,
+      pageCount: Math.ceil(totalCount / limit),
+    } satisfies QuotesResponse;
   }
+
+  // For other sorts, fetch quotes with votes
+  const quotes = await db.quote.findMany({
+    skip: (page - 1) * limit,
+    take: limit,
+    orderBy: (() => {
+      switch (sort) {
+        case "newest":
+          return { createdAt: "desc" };
+        case "oldest":
+          return { createdAt: "asc" };
+        default:
+          return { createdAt: "desc" };
+      }
+    })(),
+    include: {
+      votes: true,
+    },
+  });
 
   return {
     quotes: quotes.map((quote) => ({
@@ -127,7 +160,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
       createdAt: quote.createdAt,
       score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
       vote: author
-        ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+        ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
         : 0,
       text: quote.text,
     })),
@@ -136,31 +169,35 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
   } satisfies QuotesResponse;
 }
 
-export async function searchQuotes(query: string, limit: number, author?: string) {
+export async function searchQuotes(
+  query: string,
+  limit: number,
+  author?: string,
+) {
   const db = new PrismaClient();
 
-  const sanitizedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sanitizedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   const quotes = await db.quote.findMany({
     where: {
       text: {
-        contains: sanitizedQuery
-      }
+        contains: sanitizedQuery,
+      },
     },
     take: limit,
     include: {
       votes: true,
-    }
+    },
   });
 
   return quotes
-    .map(quote => ({
+    .map((quote) => ({
       id: quote.id,
       text: quote.text,
       createdAt: quote.createdAt,
       score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
       vote: author
-        ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+        ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
         : 0,
     }))
     .sort((a, b) => b.score - a.score);

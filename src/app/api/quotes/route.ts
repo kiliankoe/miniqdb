@@ -7,6 +7,7 @@ import { authOptions } from "../auth/[...nextauth]/authOptions";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
 
   const params = await request.nextUrl.searchParams;
 
@@ -25,8 +26,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid sort" }, { status: 400 });
   }
 
-  const resp = await getQuotes(sort as Sort, parseInt(page), parseInt(limit), session?.user?.email ?? undefined);
-  return NextResponse.json(resp);
+  const resp = await getQuotes(
+    sort as Sort,
+    parseInt(page),
+    parseInt(limit),
+    session?.user?.email ?? undefined,
+  );
+  return NextResponse.json({ ...resp, isAdmin });
 }
 
 export async function POST(request: NextRequest) {
@@ -40,7 +46,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Expected quote" }, { status: 400 });
   }
   if (body.quote.length < 5 || body.quote.length > 1000) {
-    return NextResponse.json({ error: "Quote must be between 5 and 1000 characters" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Quote must be between 5 and 1000 characters" },
+      { status: 400 },
+    );
   }
 
   await addQuote(body.quote, session.user.email);

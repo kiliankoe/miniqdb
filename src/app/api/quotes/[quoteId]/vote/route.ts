@@ -4,7 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 import { getQuote } from "../../GetQuotes";
 
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ quoteId: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ quoteId: string }> },
+) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

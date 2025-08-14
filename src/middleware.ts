@@ -2,6 +2,11 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  // In development, use a default secret if none is provided
+  if (process.env.NODE_ENV === "development" && !process.env.NEXTAUTH_SECRET) {
+    process.env.NEXTAUTH_SECRET = "dev-secret-do-not-use-in-production";
+  }
+
   const secret = process.env.NEXTAUTH_SECRET;
 
   const pathname = request.nextUrl.pathname;

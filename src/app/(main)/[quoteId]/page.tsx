@@ -1,17 +1,13 @@
 "use client";
 
-import { Loading } from "@/shared/Loading";
-import { QuoteView } from "@/shared/QuoteView";
+import { Loading } from "@/components/Loading";
+import { QuoteView } from "@/components/QuoteView";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 
 export default function QuotePage() {
   const { quoteId } = useParams();
-  const {
-    data: quote,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["quote", quoteId],
     queryFn: async () => {
       const res = await fetch(`/api/quotes/${quoteId}`);
@@ -25,6 +21,9 @@ export default function QuotePage() {
     },
   });
 
+  const quote = data?.quote || null;
+  const isAdmin = data?.isAdmin || false;
+
   if (error) {
     return <div>Error: {error.message}</div>;
   }
@@ -37,5 +36,5 @@ export default function QuotePage() {
     return <div>Quote not found</div>;
   }
 
-  return <QuoteView quote={quote} />;
+  return <QuoteView quote={quote} isAdmin={isAdmin} />;
 }

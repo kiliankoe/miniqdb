@@ -1,24 +1,24 @@
-import { Box, Container, Paper, Typography } from '@mui/material';
-import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
-import { orange } from '@mui/material/colors';
+import { Box, Container, Paper, Typography } from "@mui/material";
+import MarkEmailReadIcon from "@mui/icons-material/MarkEmailRead";
+import { orange } from "@mui/material/colors";
 
 export default function VerifyRequestPage() {
   return (
     <Container maxWidth="sm">
       <Box
         sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         <Paper
           elevation={0}
           sx={{
             p: 4,
-            width: '100%',
-            textAlign: 'center',
+            width: "100%",
+            textAlign: "center",
           }}
         >
           <MarkEmailReadIcon
