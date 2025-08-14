@@ -1,9 +1,9 @@
 "use client";
 
 import type { Sort } from "@/app/api/quotes/Sort";
+import { Loading } from "@/components/Loading";
 import { NewSinceDivider } from "@/components/NewSinceDivider";
-import { Loading } from "@/shared/Loading";
-import { QuoteView } from "@/shared/QuoteView";
+import { QuoteView } from "@/components/QuoteView";
 import { Pagination } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";

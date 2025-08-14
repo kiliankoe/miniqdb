@@ -1,7 +1,7 @@
 "use client";
 
-import { Loading } from "@/shared/Loading";
-import { QuoteView } from "@/shared/QuoteView";
+import { Loading } from "@/components/Loading";
+import { QuoteView } from "@/components/QuoteView";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 

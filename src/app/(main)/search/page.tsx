@@ -1,12 +1,12 @@
 "use client";
 
-import { Box, TextField, Typography, CircularProgress } from "@mui/material";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import useDebounce from "@/hooks/useDebounce";
-import { QuoteView } from "@/shared/QuoteView";
 import type { QuoteResponse } from "@/app/api/quotes/QuoteResponse";
+import { QuoteView } from "@/components/QuoteView";
+import useDebounce from "@/hooks/useDebounce";
+import { Box, CircularProgress, TextField, Typography } from "@mui/material";
 import { orange } from "@mui/material/colors";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
