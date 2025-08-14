@@ -92,12 +92,11 @@ export default function HomePage() {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100%",
-        justifyContent: "space-between",
-        gap: "24px",
+        minHeight: "calc(100% - 64px)",
+        paddingBottom: "24px",
       }}
     >
-      <ul>
+      <ul style={{ flexGrow: 1 }}>
         {quotes?.map((quote: QuoteResponse, index: number) => (
           <React.Fragment key={quote.id}>
             {dividerIndex === index && (
@@ -112,12 +111,21 @@ export default function HomePage() {
         ))}
       </ul>
       {sort !== "random" && data?.pageCount > 1 && (
-        <Pagination
-          count={data?.pageCount ?? 0}
-          page={page}
-          size="small"
-          onChange={handlePageChange}
-        />
+        <div
+          style={{
+            marginTop: "auto",
+            paddingTop: "24px",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Pagination
+            count={data?.pageCount ?? 0}
+            page={page}
+            size="small"
+            onChange={handlePageChange}
+          />
+        </div>
       )}
     </div>
   );

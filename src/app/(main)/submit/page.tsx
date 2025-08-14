@@ -18,7 +18,7 @@ function AddForm() {
 
   const handleSubmit = async () => {
     if (newQuote.length < 5 || isSubmitting) return;
-    
+
     setIsSubmitting(true);
     await fetch("/api/quotes", {
       method: "POST",

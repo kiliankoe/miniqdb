@@ -15,11 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning style={{ height: "100%" }}>
       <body
         style={{
           padding: "24px",
           height: "100%",
+          margin: 0,
+          boxSizing: "border-box",
         }}
       >
         {children}
