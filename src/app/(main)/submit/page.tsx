@@ -48,6 +48,9 @@ function AddForm() {
           "& .MuiOutlinedInput-root": {
             bgcolor: (theme) =>
               theme.palette.mode === "dark" ? "grey.900" : "grey.100",
+            "&.Mui-focused fieldset": {
+              borderColor: orange[700],
+            },
           },
         }}
       />
