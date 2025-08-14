@@ -5,6 +5,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
+import Header from "./Header";
 
 const queryClient = new QueryClient();
 
@@ -40,11 +41,14 @@ export default function ClientLayout({
     [mode],
   );
 
+  const appName = process.env.NEXT_PUBLIC_MINIQDB_NAME || "miniqdb";
+
   return (
     <SessionProvider>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <QueryClientProvider client={queryClient}>
+          <Header appName={appName} />
           {children}
         </QueryClientProvider>
       </ThemeProvider>
