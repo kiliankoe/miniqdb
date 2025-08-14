@@ -12,14 +12,20 @@ export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  const { data: quotes = [], isLoading, error } = useQuery({
-    queryKey: ['quotes', 'search', debouncedSearchQuery],
+  const {
+    data: quotes = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["quotes", "search", debouncedSearchQuery],
     queryFn: async () => {
       if (!debouncedSearchQuery.trim()) {
         return [];
       }
 
-      const response = await fetch(`/api/quotes/search?q=${encodeURIComponent(debouncedSearchQuery)}`);
+      const response = await fetch(
+        `/api/quotes/search?q=${encodeURIComponent(debouncedSearchQuery)}`,
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch quotes");
@@ -34,7 +40,7 @@ export default function SearchPage() {
   });
 
   return (
-    <Box >
+    <Box>
       <TextField
         fullWidth
         placeholder="Search quotes"
@@ -43,8 +49,8 @@ export default function SearchPage() {
         onChange={(e) => setSearchQuery(e.target.value)}
         sx={{
           mb: 4,
-          '& .MuiOutlinedInput-root': {
-            '&.Mui-focused fieldset': {
+          "& .MuiOutlinedInput-root": {
+            "&.Mui-focused fieldset": {
               borderColor: orange[700],
             },
           },
@@ -63,11 +69,14 @@ export default function SearchPage() {
         </Typography>
       )}
 
-      {!isLoading && !error && quotes.length === 0 && debouncedSearchQuery.trim() !== "" && (
-        <Typography sx={{ my: 2 }}>
-          No quotes found matching your search.
-        </Typography>
-      )}
+      {!isLoading &&
+        !error &&
+        quotes.length === 0 &&
+        debouncedSearchQuery.trim() !== "" && (
+          <Typography sx={{ my: 2 }}>
+            No quotes found matching your search.
+          </Typography>
+        )}
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {quotes.map((quote: QuoteResponse) => (

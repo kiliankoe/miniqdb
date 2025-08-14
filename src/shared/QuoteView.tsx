@@ -27,9 +27,9 @@ export function QuoteView({ quote }: { quote: QuoteResponse }) {
       direction="column"
       spacing={0}
       maxWidth={{
-        xs: '100%',
-        sm: '90%',
-        md: '80%'
+        xs: "100%",
+        sm: "90%",
+        md: "80%",
       }}
     >
       <Stack direction="row" spacing={1} alignItems="center">

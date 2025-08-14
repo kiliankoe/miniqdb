@@ -8,8 +8,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { IconButton, Stack, Typography } from "@mui/material";
 import { blue, orange } from "@mui/material/colors";
-import { useQueryClient, useMutation } from "@tanstack/react-query";
-import React from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function VoteView({
   score,

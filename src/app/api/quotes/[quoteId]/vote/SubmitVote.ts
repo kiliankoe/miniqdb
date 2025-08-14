@@ -1,7 +1,11 @@
 import { PrismaClient } from "@prisma/client";
 import { getQuote } from "../../GetQuotes";
 
-export async function submitVote(quoteId: string, authorId: string, vote: number) {
+export async function submitVote(
+  quoteId: string,
+  authorId: string,
+  vote: number,
+) {
   const quote = await getQuote(quoteId);
   if (!quote) {
     throw new Error("Quote not found");
@@ -27,8 +31,8 @@ export async function submitVote(quoteId: string, authorId: string, vote: number
     where: {
       quoteId_author: {
         quoteId: Number(quote.id),
-        author: authorId
-      }
+        author: authorId,
+      },
     },
     create: {
       quoteId: Number(quote.id),

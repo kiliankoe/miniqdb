@@ -51,8 +51,8 @@ export default function Login() {
             required
             disabled={isSubmitting}
             sx={{
-              '& .MuiInputLabel-root': {
-                '&.Mui-focused': {
+              "& .MuiInputLabel-root": {
+                "&.Mui-focused": {
                   color: orange[700],
                 },
               },
@@ -70,19 +70,19 @@ export default function Login() {
           {process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT && (
             <Button
               disableElevation
-            fullWidth
-            variant="contained"
-            onClick={() => {
-              router.push("/login/nothing-to-see-here");
-            }}
-            sx={{
-              mt: 3,
-              textTransform: "none",
-              backgroundColor: orange[700],
-              color: "white",
-            }}
-            disabled={isSubmitting}
-          >
+              fullWidth
+              variant="contained"
+              onClick={() => {
+                router.push("/login/nothing-to-see-here");
+              }}
+              sx={{
+                mt: 3,
+                textTransform: "none",
+                backgroundColor: orange[700],
+                color: "white",
+              }}
+              disabled={isSubmitting}
+            >
               {process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT}
             </Button>
           )}
@@ -91,16 +91,22 @@ export default function Login() {
             disableElevation
             fullWidth
             type="submit"
-            variant={process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT ? "text" : "contained"}
+            variant={
+              process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT
+                ? "text"
+                : "contained"
+            }
             sx={{
               mt: 3,
               textTransform: "none",
-              ...(process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT ? {
-                color: orange[700],
-              } : {
-                backgroundColor: orange[700],
-                color: "white",
-              }),
+              ...(process.env.NEXT_PUBLIC_NOTHING_TO_SEE_HERE_BUTTON_TEXT
+                ? {
+                    color: orange[700],
+                  }
+                : {
+                    backgroundColor: orange[700],
+                    color: "white",
+                  }),
             }}
             disabled={isSubmitting}
           >

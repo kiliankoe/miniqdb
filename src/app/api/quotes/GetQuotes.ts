@@ -16,7 +16,7 @@ export async function getQuote(quoteId: string, author?: string) {
   }
 
   const userVote = author
-    ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+    ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
     : 0;
 
   return {
@@ -28,7 +28,12 @@ export async function getQuote(quoteId: string, author?: string) {
   };
 }
 
-export async function getQuotes(sort: Sort, page: number, limit: number, author?: string) {
+export async function getQuotes(
+  sort: Sort,
+  page: number,
+  limit: number,
+  author?: string,
+) {
   const db = new PrismaClient();
   const totalCount = await db.quote.count();
 
@@ -37,7 +42,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
       const quotes = await db.quote.findMany({
         take: totalCount,
         orderBy: {
-          id: 'asc'
+          id: "asc",
         },
         include: {
           votes: true,
@@ -52,7 +57,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
           createdAt: quote.createdAt,
           score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
           vote: author
-            ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+            ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
             : 0,
           text: quote.text,
         })),
@@ -75,7 +80,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
         createdAt: quote.createdAt,
         score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
         vote: author
-          ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+          ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
           : 0,
         text: quote.text,
       })),
@@ -127,7 +132,7 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
       createdAt: quote.createdAt,
       score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
       vote: author
-        ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+        ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
         : 0,
       text: quote.text,
     })),
@@ -136,31 +141,35 @@ export async function getQuotes(sort: Sort, page: number, limit: number, author?
   } satisfies QuotesResponse;
 }
 
-export async function searchQuotes(query: string, limit: number, author?: string) {
+export async function searchQuotes(
+  query: string,
+  limit: number,
+  author?: string,
+) {
   const db = new PrismaClient();
 
-  const sanitizedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sanitizedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   const quotes = await db.quote.findMany({
     where: {
       text: {
-        contains: sanitizedQuery
-      }
+        contains: sanitizedQuery,
+      },
     },
     take: limit,
     include: {
       votes: true,
-    }
+    },
   });
 
   return quotes
-    .map(quote => ({
+    .map((quote) => ({
       id: quote.id,
       text: quote.text,
       createdAt: quote.createdAt,
       score: quote.votes.reduce((acc, vote) => acc + vote.value, 0),
       vote: author
-        ? quote.votes.find(vote => vote.author === author)?.value ?? 0
+        ? (quote.votes.find((vote) => vote.author === author)?.value ?? 0)
         : 0,
     }))
     .sort((a, b) => b.score - a.score);

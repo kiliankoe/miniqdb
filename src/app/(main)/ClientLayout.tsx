@@ -8,11 +8,17 @@ import { useEffect, useMemo, useState } from "react";
 
 const queryClient = new QueryClient();
 
-export default function ClientLayout({ children }: { children: React.ReactNode }) {
+export default function ClientLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [mode, setMode] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const prefersDarkMode = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
     setMode(prefersDarkMode ? "dark" : "light");
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -31,14 +37,16 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           mode,
         },
       }),
-    [mode]
+    [mode],
   );
 
   return (
     <SessionProvider>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
       </ThemeProvider>
     </SessionProvider>
   );

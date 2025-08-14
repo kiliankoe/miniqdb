@@ -9,7 +9,10 @@ export async function GET(request: NextRequest) {
 
   const query = params.get("q");
   if (!query) {
-    return NextResponse.json({ error: "Search query is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Search query is required" },
+      { status: 400 },
+    );
   }
 
   const limit = params.get("limit") ?? "20";
@@ -18,10 +21,17 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const quotes = await searchQuotes(query, parseInt(limit), session?.user?.email ?? undefined);
+    const quotes = await searchQuotes(
+      query,
+      parseInt(limit),
+      session?.user?.email ?? undefined,
+    );
     return NextResponse.json({ quotes });
   } catch (error) {
     console.error("Search error:", error);
-    return NextResponse.json({ error: "Failed to search quotes" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to search quotes" },
+      { status: 500 },
+    );
   }
 }

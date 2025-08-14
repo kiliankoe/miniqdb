@@ -3,7 +3,10 @@ import { getQuote } from "../GetQuotes";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { getServerSession } from "next-auth";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ quoteId: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ quoteId: string }> },
+) {
   const session = await getServerSession(authOptions);
   const { quoteId } = await params;
 
