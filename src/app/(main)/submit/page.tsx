@@ -14,20 +14,28 @@ function AddForm() {
   const router = useRouter();
   const session = useSession();
   const [newQuote, setNewQuote] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (newQuote.length < 5 || isSubmitting) return;
+    
+    setIsSubmitting(true);
+    await fetch("/api/quotes", {
+      method: "POST",
+      body: JSON.stringify({
+        quote: newQuote,
+        author: session.data?.user?.email,
+      }),
+    });
+    router.push("/");
+  };
 
   return (
     <Box
       component="form"
       onSubmit={async (e) => {
         e.preventDefault();
-        await fetch("/api/quotes", {
-          method: "POST",
-          body: JSON.stringify({
-            quote: newQuote,
-            author: session.data?.user?.email,
-          }),
-        });
-        router.push("/");
+        await handleSubmit();
       }}
       sx={{
         display: "flex",
@@ -41,6 +49,12 @@ function AddForm() {
         name="quote"
         value={newQuote}
         onChange={(e) => setNewQuote(e.target.value)}
+        onKeyDown={async (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            e.preventDefault();
+            await handleSubmit();
+          }
+        }}
         multiline
         rows={4}
         variant="outlined"
@@ -58,14 +72,14 @@ function AddForm() {
         type="submit"
         variant="contained"
         disableElevation
-        disabled={newQuote.length < 5}
+        disabled={newQuote.length < 5 || isSubmitting}
         sx={{
           width: { md: "256px" },
           backgroundColor: orange[700],
           color: "white",
         }}
       >
-        Submit
+        {isSubmitting ? "Submitting..." : "Submit"}
       </Button>
 
       <Typography
