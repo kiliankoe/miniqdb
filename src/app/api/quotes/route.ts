@@ -3,11 +3,11 @@ import { getQuotes } from "./GetQuotes";
 import { SortOpts, type Sort } from "./Sort";
 import { addQuote } from "./AddQuote";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/authOptions";
+import { authOptions, isUserAdmin } from "../auth/[...nextauth]/authOptions";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
+  const isAdmin = isUserAdmin(session?.user?.email);
 
   const params = await request.nextUrl.searchParams;
 

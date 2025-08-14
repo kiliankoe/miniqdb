@@ -93,3 +93,15 @@ function verifyEmail(email: string) {
   }
   return process.env.ALLOWED_DOMAINS.split(",").includes(domain);
 }
+
+export function isUserAdmin(email: string | null | undefined): boolean {
+  if (!email || !process.env.ADMIN_EMAIL) {
+    return false;
+  }
+
+  const adminEmails = process.env.ADMIN_EMAIL.split(",")
+    .map((e) => e.trim())
+    .filter((e) => e.length > 0);
+
+  return adminEmails.includes(email);
+}

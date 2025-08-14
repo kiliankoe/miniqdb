@@ -1,13 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/authOptions";
+import { authOptions, isUserAdmin } from "../auth/[...nextauth]/authOptions";
 
 const prisma = new PrismaClient();
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
+  const isAdmin = isUserAdmin(session?.user?.email);
 
   if (!isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
@@ -22,7 +22,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
+  const isAdmin = isUserAdmin(session?.user?.email);
 
   if (!isAdmin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });

@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { type NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/authOptions";
+import { authOptions, isUserAdmin } from "../../auth/[...nextauth]/authOptions";
 import { getQuote } from "../GetQuotes";
 
 export async function GET(
@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ quoteId: string }> },
 ) {
   const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
+  const isAdmin = isUserAdmin(session?.user?.email);
   const { quoteId } = await params;
 
   const quote = await getQuote(quoteId, session?.user?.email ?? undefined);
@@ -25,7 +25,7 @@ export async function PATCH(
 ) {
   const session = await getServerSession(authOptions);
 
-  if (session?.user?.email !== process.env.ADMIN_EMAIL) {
+  if (!isUserAdmin(session?.user?.email)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -56,7 +56,7 @@ export async function DELETE(
 ) {
   const session = await getServerSession(authOptions);
 
-  if (session?.user?.email !== process.env.ADMIN_EMAIL) {
+  if (!isUserAdmin(session?.user?.email)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
