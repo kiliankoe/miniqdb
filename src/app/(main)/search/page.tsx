@@ -12,15 +12,11 @@ export default function SearchPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  const {
-    data: quotes = [],
-    isLoading,
-    error,
-  } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["quotes", "search", debouncedSearchQuery],
     queryFn: async () => {
       if (!debouncedSearchQuery.trim()) {
-        return [];
+        return { quotes: [], isAdmin: false };
       }
 
       const response = await fetch(
@@ -31,13 +27,15 @@ export default function SearchPage() {
         throw new Error("Failed to fetch quotes");
       }
 
-      const data = await response.json();
-      return data.quotes || [];
+      return response.json();
     },
     enabled: debouncedSearchQuery.trim().length >= 2,
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
+
+  const quotes = data?.quotes || [];
+  const isAdmin = data?.isAdmin || false;
 
   return (
     <Box>
@@ -80,7 +78,7 @@ export default function SearchPage() {
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {quotes.map((quote: QuoteResponse) => (
-          <QuoteView key={quote.id} quote={quote} />
+          <QuoteView key={quote.id} quote={quote} isAdmin={isAdmin} />
         ))}
       </Box>
     </Box>

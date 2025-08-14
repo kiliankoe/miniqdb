@@ -5,6 +5,7 @@ import { searchQuotes } from "../GetQuotes";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
   const params = request.nextUrl.searchParams;
 
   const query = params.get("q");
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
       parseInt(limit),
       session?.user?.email ?? undefined,
     );
-    return NextResponse.json({ quotes });
+    return NextResponse.json({ quotes, isAdmin });
   } catch (error) {
     console.error("Search error:", error);
     return NextResponse.json(

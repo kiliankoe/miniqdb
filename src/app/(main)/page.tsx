@@ -14,13 +14,16 @@ export default function HomePage() {
   const page = parseInt((params.get("page") ?? "1") as string);
   const limit = parseInt((params.get("limit") ?? "10") as string);
   const sort = (params.get("sort") ?? "newest") as Sort;
-  const { data: quotes, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["quotes", page, limit, sort],
     queryFn: () =>
       fetch(`/api/quotes?sort=${sort}&page=${page}&limit=${limit}`).then(
         (res) => res.json(),
       ),
   });
+
+  const quotes = data?.quotes;
+  const isAdmin = data?.isAdmin;
 
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
@@ -46,15 +49,15 @@ export default function HomePage() {
       }}
     >
       <ul>
-        {quotes?.quotes.map((quote: QuoteResponse) => (
+        {quotes?.map((quote: QuoteResponse) => (
           <li key={quote.id} style={{ marginBottom: "24px" }}>
-            <QuoteView quote={quote} />
+            <QuoteView quote={quote} isAdmin={isAdmin} />
           </li>
         ))}
       </ul>
-      {sort !== "random" && quotes?.pageCount > 1 && (
+      {sort !== "random" && data?.pageCount > 1 && (
         <Pagination
-          count={quotes?.pageCount ?? 0}
+          count={data?.pageCount ?? 0}
           page={page}
           size="small"
           onChange={handlePageChange}

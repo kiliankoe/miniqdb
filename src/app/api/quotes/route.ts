@@ -7,6 +7,7 @@ import { authOptions } from "../auth/[...nextauth]/authOptions";
 
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
+  const isAdmin = session?.user?.email === process.env.ADMIN_EMAIL;
 
   const params = await request.nextUrl.searchParams;
 
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
     parseInt(limit),
     session?.user?.email ?? undefined,
   );
-  return NextResponse.json(resp);
+  return NextResponse.json({ ...resp, isAdmin });
 }
 
 export async function POST(request: NextRequest) {

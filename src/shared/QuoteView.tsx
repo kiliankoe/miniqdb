@@ -1,7 +1,19 @@
+"use client";
+
 import type { QuoteResponse } from "@/app/api/quotes/QuoteResponse";
-import { Stack, Typography } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import {
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { orange } from "@mui/material/colors";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { VoteView } from "./VoteView";
 
 function parseMarkdownLinks(text: string) {
@@ -19,8 +31,44 @@ function parseMarkdownLinks(text: string) {
   });
 }
 
-export function QuoteView({ quote }: { quote: QuoteResponse }) {
+export function QuoteView({
+  quote,
+  isAdmin,
+}: {
+  quote: QuoteResponse;
+  isAdmin?: boolean;
+}) {
   const createdAt = new Date(quote.createdAt);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedText, setEditedText] = useState(quote.text || "");
+  const queryClient = useQueryClient();
+
+  const updateMutation = useMutation({
+    mutationFn: async (newText: string) => {
+      const response = await fetch(`/api/quotes/${quote.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: newText }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to update quote");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsEditing(false);
+      queryClient.invalidateQueries({ queryKey: ["quotes"] });
+    },
+  });
+
+  const handleSave = () => {
+    updateMutation.mutate(editedText);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditedText(quote.text || "");
+  };
 
   return (
     <Stack
@@ -51,16 +99,74 @@ export function QuoteView({ quote }: { quote: QuoteResponse }) {
             })}
           </Typography>
         </Link>
-        <VoteView score={quote.score} vote={quote.vote} quoteId={quote.id} />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <VoteView score={quote.score} vote={quote.vote} quoteId={quote.id} />
+          {isAdmin && !isEditing && (
+            <IconButton
+              size="small"
+              onClick={() => setIsEditing(true)}
+              sx={{ color: "text.secondary" }}
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
       </Stack>
-      <div>
-        {quote.text?.split("\n").map((line, i) => (
-          <React.Fragment key={i}>
-            {parseMarkdownLinks(line)}
-            <br />
-          </React.Fragment>
-        ))}
-      </div>
+      {isEditing ? (
+        <Box sx={{ mt: 1 }}>
+          <TextField
+            fullWidth
+            multiline
+            value={editedText}
+            onChange={(e) => setEditedText(e.target.value)}
+            sx={{
+              mb: 1,
+              "& .MuiOutlinedInput-root": {
+                "&.Mui-focused fieldset": {
+                  borderColor: orange[700],
+                },
+              },
+            }}
+          />
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              size="small"
+              variant="contained"
+              onClick={handleSave}
+              disabled={updateMutation.isPending}
+              sx={{
+                backgroundColor: orange[700],
+                color: "white",
+                "&:hover": {
+                  backgroundColor: orange[800],
+                },
+              }}
+            >
+              Save
+            </Button>
+            <Button
+              size="small"
+              variant="text"
+              onClick={handleCancel}
+              disabled={updateMutation.isPending}
+              sx={{
+                color: orange[700],
+              }}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        <div>
+          {quote.text?.split("\n").map((line, i) => (
+            <React.Fragment key={i}>
+              {parseMarkdownLinks(line)}
+              <br />
+            </React.Fragment>
+          ))}
+        </div>
+      )}
     </Stack>
   );
 }
