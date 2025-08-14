@@ -1,9 +1,12 @@
 "use client";
 
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import Link from "next/link";
 import styles from "./Navigation.module.css";
 
 export default function Navigation() {
+  const { isAdmin } = useIsAdmin();
+
   return (
     <nav className={styles.nav}>
       <Link href="/" className={styles.link}>
@@ -29,6 +32,11 @@ export default function Navigation() {
       <Link href="/submit" className={styles.link}>
         #submit
       </Link>
+      {isAdmin && (
+        <Link href="/admin" className={styles.link}>
+          #admin
+        </Link>
+      )}
     </nav>
   );
 }
