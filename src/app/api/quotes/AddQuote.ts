@@ -28,13 +28,13 @@ export async function addQuote(quoteText: string, author: string) {
     const payload = isSlackWebhook
       ? {
           // Slack webhook format
-          text: `New ${process.env.NEXT_PUBLIC_MINIQDB_NAME} quote added: "${quote.text}"`,
+          text: `New ${process.env.NEXT_PUBLIC_MINIQDB_NAME} quote added.`,
           blocks: [
             {
               type: "section",
               text: {
                 type: "mrkdwn",
-                text: `*New ${process.env.NEXT_PUBLIC_MINIQDB_NAME} quote added*\n>${quote.text}`,
+                text: `New ${process.env.NEXT_PUBLIC_MINIQDB_NAME} quote added.`,
               },
             },
             {
@@ -52,7 +52,6 @@ export async function addQuote(quoteText: string, author: string) {
           event: "quote.created",
           quote: {
             id: quote.id,
-            text: quote.text,
             createdAt: quote.createdAt,
           },
         };
