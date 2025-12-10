@@ -5,7 +5,7 @@ import { authOptions, isUserAdmin } from "../../auth/[...nextauth]/authOptions";
 import { getQuote } from "../GetQuotes";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ quoteId: string }> },
 ) {
   const session = await getServerSession(authOptions);
@@ -40,7 +40,7 @@ export async function PATCH(
 
   try {
     const updatedQuote = await db.quote.update({
-      where: { id: parseInt(quoteId) },
+      where: { id: parseInt(quoteId, 10) },
       data: { text: body.text },
     });
 
@@ -51,7 +51,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ quoteId: string }> },
 ) {
   const session = await getServerSession(authOptions);
@@ -65,10 +65,10 @@ export async function DELETE(
 
   try {
     await db.vote.deleteMany({
-      where: { quoteId: parseInt(quoteId) },
+      where: { quoteId: parseInt(quoteId, 10) },
     });
     const deletedQuote = await db.quote.delete({
-      where: { id: parseInt(quoteId) },
+      where: { id: parseInt(quoteId, 10) },
     });
 
     return NextResponse.json({

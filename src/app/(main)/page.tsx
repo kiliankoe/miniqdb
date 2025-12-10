@@ -13,8 +13,8 @@ import type { QuoteResponse } from "../api/quotes/QuoteResponse";
 export default function HomePage() {
   const router = useRouter();
   const params = useSearchParams();
-  const page = parseInt((params.get("page") ?? "1") as string);
-  const limit = parseInt((params.get("limit") ?? "10") as string);
+  const page = parseInt((params.get("page") ?? "1") as string, 10);
+  const limit = parseInt((params.get("limit") ?? "10") as string, 10);
   const sort = (params.get("sort") ?? "newest") as Sort;
   const [lastVisit, setLastVisit] = useState<string | null>(null);
   const [dividerIndex, setDividerIndex] = useState<number | null>(null);

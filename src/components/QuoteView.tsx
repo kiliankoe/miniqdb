@@ -28,6 +28,7 @@ function parseMarkdownLinks(text: string) {
     if (linkMatch) {
       const [, text, url] = linkMatch;
       return (
+        // biome-ignore lint/suspicious/noArrayIndexKey: array is derived from static string split, won't reorder
         <a key={j} href={url} target="_blank" rel="noopener noreferrer">
           {text}
         </a>
@@ -199,6 +200,7 @@ export function QuoteView({
       ) : (
         <div>
           {quote.text?.split("\n").map((line, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: array is derived from static string split, won't reorder
             <React.Fragment key={i}>
               {parseMarkdownLinks(line)}
               <br />

@@ -17,14 +17,14 @@ export async function GET(request: NextRequest) {
   }
 
   const limit = params.get("limit") ?? "20";
-  if (isNaN(parseInt(limit)) || parseInt(limit) <= 0) {
+  if (Number.isNaN(parseInt(limit, 10)) || parseInt(limit, 10) <= 0) {
     return NextResponse.json({ error: "Invalid limit" }, { status: 400 });
   }
 
   try {
     const quotes = await searchQuotes(
       query,
-      parseInt(limit),
+      parseInt(limit, 10),
       session?.user?.email ?? undefined,
     );
     return NextResponse.json({ quotes, isAdmin });

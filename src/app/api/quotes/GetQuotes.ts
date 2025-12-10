@@ -4,7 +4,7 @@ import type { Sort } from "./Sort";
 
 export async function getQuote(quoteId: string, author?: string) {
   const db = new PrismaClient();
-  const id = parseInt(quoteId);
+  const id = parseInt(quoteId, 10);
   const quote = await db.quote.findUnique({
     where: { id },
     include: {

@@ -12,12 +12,12 @@ export async function GET(request: NextRequest) {
   const params = await request.nextUrl.searchParams;
 
   const page = params.get("page") ?? "1";
-  if (isNaN(parseInt(page)) || parseInt(page) < 0) {
+  if (Number.isNaN(parseInt(page, 10)) || parseInt(page, 10) < 0) {
     return NextResponse.json({ error: "Invalid page" }, { status: 400 });
   }
 
   const limit = params.get("limit") ?? "10";
-  if (isNaN(parseInt(limit)) || parseInt(limit) <= 0) {
+  if (Number.isNaN(parseInt(limit, 10)) || parseInt(limit, 10) <= 0) {
     return NextResponse.json({ error: "Invalid limit" }, { status: 400 });
   }
 
@@ -28,8 +28,8 @@ export async function GET(request: NextRequest) {
 
   const resp = await getQuotes(
     sort as Sort,
-    parseInt(page),
-    parseInt(limit),
+    parseInt(page, 10),
+    parseInt(limit, 10),
     session?.user?.email ?? undefined,
   );
   return NextResponse.json({ ...resp, isAdmin });

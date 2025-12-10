@@ -38,7 +38,10 @@ export function VoteView({
       await queryClient.cancelQueries({ queryKey: ["quote", String(quoteId)] });
 
       // Store all previous states
-      const previousStates: Array<{ queryKey: any; data: any }> = [];
+      const previousStates: Array<{
+        queryKey: readonly unknown[];
+        data: unknown;
+      }> = [];
 
       // Update single quote cache for quote detail page
       const singleQuoteKey = ["quote", String(quoteId)];
@@ -103,7 +106,7 @@ export function VoteView({
 
       return { previousStates };
     },
-    onError: (err, newVote, context) => {
+    onError: (_err, _newVote, context) => {
       // Restore all previous states on error
       if (context?.previousStates) {
         context.previousStates.forEach(({ queryKey, data }) => {
@@ -111,7 +114,7 @@ export function VoteView({
         });
       }
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       // Update was successful, the optimistic updates remain
       // Don't invalidate queries - just let the optimistic updates stand
     },

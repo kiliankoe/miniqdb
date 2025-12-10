@@ -6,25 +6,29 @@ import useDebounce from "@/hooks/useDebounce";
 import { Box, CircularProgress, TextField, Typography } from "@mui/material";
 import { orange } from "@mui/material/colors";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function SearchPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
+    const currentQ = params.get("q") || "";
+    if (currentQ === debouncedSearchQuery) {
+      return;
+    }
     if (debouncedSearchQuery) {
       params.set("q", debouncedSearchQuery);
     } else {
       params.delete("q");
     }
-    router.replace(`/search?${params.toString()}`);
-  }, [debouncedSearchQuery, router, searchParams]);
+    const newUrl = `/search?${params.toString()}`;
+    window.history.replaceState(null, "", newUrl);
+  }, [debouncedSearchQuery]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["quotes", "search", debouncedSearchQuery],
