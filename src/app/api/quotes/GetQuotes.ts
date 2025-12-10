@@ -176,12 +176,10 @@ export async function searchQuotes(
 ) {
   const db = new PrismaClient();
 
-  const sanitizedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
   const quotes = await db.quote.findMany({
     where: {
       text: {
-        contains: sanitizedQuery,
+        contains: query,
       },
     },
     take: limit,
