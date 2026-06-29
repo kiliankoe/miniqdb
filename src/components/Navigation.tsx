@@ -18,7 +18,7 @@ export function Navigation() {
   return (
     <nav className={styles.nav}>
       <Link to="/" search={{ sort: "newest" }} className={styles.link}>
-        #new
+        #latest
       </Link>
       <Link to="/" search={{ sort: "top" }} className={styles.link}>
         #top
