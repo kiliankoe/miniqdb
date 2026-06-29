@@ -265,9 +265,8 @@ onRecordCreate((e) => {
   }
 
   if (allowedDomains.indexOf(domain.toLowerCase()) === -1) {
-    throw new BadRequestError(
-      `Registration is not allowed for the domain "${domain}". Allowed domains: ${allowedDomains.join(", ")}`
-    );
+    // Keep this generic — don't disclose the rejected domain or the allowlist.
+    throw new BadRequestError("Registration is not allowed for this email address.");
   }
 
   e.next();
