@@ -77,6 +77,23 @@ export function useQuote(shortId: string) {
   });
 }
 
+export function useRandomQuotes(count: number) {
+  return useQuery<QuoteRecord[]>({
+    queryKey: ["quotes", "random-examples", count],
+    queryFn: async () => {
+      const pb = getPb();
+      const result = await pb
+        .collection("quotes")
+        .getList<QuoteRecord>(1, count, {
+          sort: "@random",
+        });
+      return result.items;
+    },
+    // Keep the same examples for the session rather than reshuffling on refocus.
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+}
+
 export function useSearchQuotes(query: string) {
   return useQuery({
     queryKey: ["quotes", "search", query],

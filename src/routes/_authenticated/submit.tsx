@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useSubmitQuote } from "@/lib/queries";
+import { useRandomQuotes, useSubmitQuote } from "@/lib/queries";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { orange } from "@mui/material/colors";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/submit")({
   component: SubmitPage,
@@ -12,6 +12,7 @@ function SubmitPage() {
   const navigate = useNavigate();
   const [newQuote, setNewQuote] = useState("");
   const submitMutation = useSubmitQuote();
+  const { data: examples } = useRandomQuotes(3);
 
   const handleSubmit = async () => {
     if (newQuote.length < 5 || submitMutation.isPending) return;
@@ -80,24 +81,19 @@ function SubmitPage() {
       >
         Examples:
         <ul style={{ listStyleType: "disc", paddingLeft: 14, paddingTop: 6 }}>
-          <li>
-            <Typography variant="body2" color="text.secondary">
-              &quot;Kilian, how do I make your sausage warm?&quot; - Shawn
-            </Typography>
-          </li>
-          <li>
-            <Typography variant="body2" color="text.secondary">
-              &quot;Das sind Manager, die wollen gebrochen werden.&quot; - Dirk
-            </Typography>
-          </li>
-          <li>
-            <Typography variant="body2" color="text.secondary">
-              Vincent: &quot;Maybe I should just check in the morning if I'm
-              stupid or not.&quot;
-              <br />
-              Shyam: &quot;Most likely that will be the case.&quot;
-            </Typography>
-          </li>
+          {examples?.map((quote) => (
+            <li key={quote.id}>
+              <Typography variant="body2" color="text.secondary">
+                {quote.text.split("\n").map((line, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: derived from a static string split, won't reorder
+                  <Fragment key={i}>
+                    {line}
+                    <br />
+                  </Fragment>
+                ))}
+              </Typography>
+            </li>
+          ))}
         </ul>
       </Typography>
     </Box>
