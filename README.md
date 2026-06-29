@@ -17,13 +17,17 @@ This starts PocketBase on [http://localhost:8090](http://localhost:8090). On fir
 1. Create a superuser account.
 2. Configure SMTP under Settings > Mail (required for OTP login emails — without this, no login codes will be delivered).
 
-### Bootstrapping the first admin user
+### Admin users
 
-Regular users cannot flip their own `isAdmin` flag (the `users` collection is superuser-only for updates). To promote a user to admin:
+Regular users cannot flip their own `isAdmin` flag (the `users` collection is superuser-only for updates). There are two ways to grant admin:
 
-1. Have the user register by entering their email on `/login` and verifying the OTP.
-2. In the PocketBase admin UI (`/_/`), open the `users` collection, edit the user record, and set `isAdmin` to `true`.
-3. The user refreshes the app; the `#admin` nav link appears.
+**Via `ADMIN_EMAILS` (recommended).** Set `ADMIN_EMAILS` on the PocketBase service to a comma-separated list of emails. When set, it is authoritative: on startup every listed user is promoted to admin and every other user is demoted, and anyone who later registers with a listed email is promoted immediately (no restart needed). Leave it empty to manage `isAdmin` manually instead.
+
+```bash
+ADMIN_EMAILS=me@example.com,you@example.com docker compose up
+```
+
+**Via the admin UI.** With `ADMIN_EMAILS` unset, have the user register on `/login`, then in the PocketBase admin UI (`/_/`) open the `users` collection, edit the record, and set `isAdmin` to `true`. The user refreshes the app and the `#admin` nav link appears.
 
 Then start the frontend:
 
@@ -48,6 +52,7 @@ This builds and starts both the frontend (nginx on port 80) and PocketBase (port
 | `LOGIN_BUTTON_TEXT`               | `Login`   | Login button label                    |
 | `NOTHING_TO_SEE_HERE_BUTTON_TEXT` | _(empty)_ | Easter egg button (hidden when empty) |
 | `ALLOWED_DOMAINS`                 | _(none)_  | Comma-separated allowed email domains |
+| `ADMIN_EMAILS`                    | _(none)_  | Comma-separated admin emails (authoritative when set) |
 
 ## Data Migration
 

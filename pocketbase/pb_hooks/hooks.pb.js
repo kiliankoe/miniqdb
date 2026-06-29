@@ -244,3 +244,61 @@ onRecordCreate((e) => {
 
   e.next();
 }, "users");
+
+// ---------------------------------------------------------------------------
+// g) Admins from the ADMIN_EMAILS env var (comma-separated list).
+//    When set, ADMIN_EMAILS is authoritative: listed users are admins and
+//    everyone else is not. When unset/empty, isAdmin is left untouched so it
+//    can still be managed manually via the admin UI.
+// ---------------------------------------------------------------------------
+
+// On user creation: promote immediately if listed (no restart needed for a
+// freshly-registered admin).
+onRecordCreate((e) => {
+  const adminEmails = ($os.getenv("ADMIN_EMAILS") || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter((s) => s.length > 0);
+
+  if (adminEmails.length > 0) {
+    const email = e.record.getString("email").toLowerCase();
+    if (adminEmails.indexOf(email) !== -1) {
+      e.record.set("isAdmin", true);
+    }
+  }
+
+  e.next();
+}, "users");
+
+// On startup: reconcile existing users against ADMIN_EMAILS.
+onBootstrap((e) => {
+  // Finish bootstrap first so migrations have run and the DB is queryable.
+  e.next();
+
+  const raw = $os.getenv("ADMIN_EMAILS");
+  if (!raw) {
+    // No declarative config; leave manual admin assignments alone.
+    return;
+  }
+
+  const adminEmails = raw
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter((s) => s.length > 0);
+
+  let users = [];
+  try {
+    users = e.app.findRecordsByFilter("users", "id != ''", "", 0, 0);
+  } catch (_) {
+    return;
+  }
+
+  for (const user of users) {
+    const shouldBeAdmin =
+      adminEmails.indexOf(user.getString("email").toLowerCase()) !== -1;
+    if (user.getBool("isAdmin") !== shouldBeAdmin) {
+      user.set("isAdmin", shouldBeAdmin);
+      e.app.save(user);
+    }
+  }
+});

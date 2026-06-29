@@ -71,4 +71,5 @@ miniqdb is a minimalistic quote database web application for private communities
 - `LOGIN_BUTTON_TEXT` - Login button label (default: Login)
 - `NOTHING_TO_SEE_HERE_BUTTON_TEXT` - Easter egg button (default: empty/hidden)
 - `ALLOWED_DOMAINS` - Comma-separated allowed email domains (on PocketBase service)
+- `ADMIN_EMAILS` - Comma-separated admin emails (on PocketBase service); authoritative when set: reconciled on startup via `onBootstrap` and at user-create time in `hooks.pb.js`
 - PocketBase SMTP settings configured via PocketBase admin UI
