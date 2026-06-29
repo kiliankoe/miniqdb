@@ -39,6 +39,10 @@ migrate(
         { name: "author", type: "text", required: true },
         { name: "shortId", type: "number", required: true },
         { name: "score", type: "number" },
+        // Plain date (not autodate) so the migration can preserve original
+        // timestamps; the shortId hook defaults them to now for new quotes.
+        { name: "created", type: "date" },
+        { name: "updated", type: "date" },
       ],
       indexes: [
         "CREATE UNIQUE INDEX idx_quotes_shortId ON quotes (shortId)",
@@ -69,6 +73,8 @@ migrate(
         },
         { name: "author", type: "text", required: true },
         { name: "value", type: "number", required: true },
+        { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+        { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
       ],
       indexes: [
         "CREATE UNIQUE INDEX idx_votes_quote_author ON votes (quote, author)",
@@ -90,6 +96,8 @@ migrate(
       fields: [
         { name: "url", type: "url", required: true },
         { name: "active", type: "bool" },
+        { name: "created", type: "autodate", onCreate: true, onUpdate: false },
+        { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
       ],
     });
     app.save(webhooks);

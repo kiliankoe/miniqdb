@@ -8,6 +8,17 @@
 //    already set a non-zero shortId, e.g. during data migration)
 // ---------------------------------------------------------------------------
 onRecordCreate((e) => {
+  // Default created/updated for app-submitted quotes. The migration provides
+  // historical timestamps, which are left untouched (these are plain date
+  // fields, not autodate, so the values aren't overwritten).
+  const nowIso = new Date().toISOString();
+  if (!e.record.getString("created")) {
+    e.record.set("created", nowIso);
+  }
+  if (!e.record.getString("updated")) {
+    e.record.set("updated", nowIso);
+  }
+
   if (e.record.getInt("shortId") > 0) {
     e.next();
     return;
@@ -32,6 +43,12 @@ onRecordCreate((e) => {
 
   e.record.set("shortId", maxShortId + 1);
 
+  e.next();
+}, "quotes");
+
+// Keep `updated` current on quote edits (plain date field, so not automatic).
+onRecordUpdate((e) => {
+  e.record.set("updated", new Date().toISOString());
   e.next();
 }, "quotes");
 
