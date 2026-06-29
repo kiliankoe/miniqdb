@@ -73,8 +73,10 @@ migrate(
         },
         { name: "author", type: "text", required: true },
         { name: "value", type: "number", required: true },
-        { name: "created", type: "autodate", onCreate: true, onUpdate: false },
-        { name: "updated", type: "autodate", onCreate: true, onUpdate: true },
+        // Plain date (not autodate) so the migration can preserve original vote
+        // timestamps; the create hook defaults them to now for new votes.
+        { name: "created", type: "date" },
+        { name: "updated", type: "date" },
       ],
       indexes: [
         "CREATE UNIQUE INDEX idx_votes_quote_author ON votes (quote, author)",

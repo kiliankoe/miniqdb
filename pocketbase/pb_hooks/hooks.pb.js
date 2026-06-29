@@ -52,6 +52,25 @@ onRecordUpdate((e) => {
   e.next();
 }, "quotes");
 
+// Default created/updated for new votes (app votes and the auto-vote hook).
+// The migration provides historical timestamps, which are left untouched.
+onRecordCreate((e) => {
+  const nowIso = new Date().toISOString();
+  if (!e.record.getString("created")) {
+    e.record.set("created", nowIso);
+  }
+  if (!e.record.getString("updated")) {
+    e.record.set("updated", nowIso);
+  }
+  e.next();
+}, "votes");
+
+// Keep `updated` current on vote changes (plain date field, so not automatic).
+onRecordUpdate((e) => {
+  e.record.set("updated", new Date().toISOString());
+  e.next();
+}, "votes");
+
 // ---------------------------------------------------------------------------
 // b) Auto-vote +1 for the quote author after quote creation (no-op if a vote
 //    by that author already exists — happens during data migration)
