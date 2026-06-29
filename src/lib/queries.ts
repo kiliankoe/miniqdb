@@ -31,10 +31,10 @@ async function enrichWithVotes(
     return quotes.map((q) => ({ ...q, vote: 0 }));
   }
 
-  const quoteIds = quotes.map((q) => `"${q.id}"`).join(",");
+  const quoteFilter = quotes.map((q) => `quote = "${q.id}"`).join(" || ");
   try {
     const votes = await pb.collection("votes").getFullList<VoteRecord>({
-      filter: `author = "${user.email}" && quote ?= ${quoteIds}`,
+      filter: `author = "${user.email}" && (${quoteFilter})`,
     });
     const voteMap = new Map(votes.map((v) => [v.quote, v.value]));
     return quotes.map((q) => ({ ...q, vote: voteMap.get(q.id) ?? 0 }));
