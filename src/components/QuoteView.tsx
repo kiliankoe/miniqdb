@@ -1,6 +1,5 @@
-"use client";
-
-import type { QuoteResponse } from "@/app/api/quotes/QuoteResponse";
+import type { QuoteWithVote } from "@/lib/types";
+import { useUpdateQuote, useDeleteQuote } from "@/lib/queries";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import {
@@ -17,8 +16,7 @@ import {
   Typography,
 } from "@mui/material";
 import { orange } from "@mui/material/colors";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
+import { Link, useNavigate } from "@tanstack/react-router";
 import React, { useState } from "react";
 import { VoteView } from "./VoteView";
 
@@ -26,11 +24,11 @@ function parseMarkdownLinks(text: string) {
   return text.split(/(\[.*?\]\(.*?\))/).map((segment, j) => {
     const linkMatch = segment.match(/\[(.*?)\]\((.*?)\)/);
     if (linkMatch) {
-      const [, text, url] = linkMatch;
+      const [, linkText, url] = linkMatch;
       return (
         // biome-ignore lint/suspicious/noArrayIndexKey: array is derived from static string split, won't reorder
         <a key={j} href={url} target="_blank" rel="noopener noreferrer">
-          {text}
+          {linkText}
         </a>
       );
     }
@@ -42,63 +40,39 @@ export function QuoteView({
   quote,
   isAdmin,
 }: {
-  quote: QuoteResponse;
+  quote: QuoteWithVote;
   isAdmin?: boolean;
 }) {
-  const createdAt = new Date(quote.createdAt);
+  const createdAt = new Date(quote.created);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedText, setEditedText] = useState(quote.text || "");
+  const [editedText, setEditedText] = useState(quote.text);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
-  const updateMutation = useMutation({
-    mutationFn: async (newText: string) => {
-      const response = await fetch(`/api/quotes/${quote.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: newText }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to update quote");
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      setIsEditing(false);
-      queryClient.invalidateQueries({ queryKey: ["quotes"] });
-    },
-  });
+  const updateMutation = useUpdateQuote();
+  const deleteMutation = useDeleteQuote();
 
   const handleSave = () => {
-    updateMutation.mutate(editedText);
+    updateMutation.mutate(
+      { id: quote.id, text: editedText },
+      { onSuccess: () => setIsEditing(false) },
+    );
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    setEditedText(quote.text || "");
+    setEditedText(quote.text);
   };
 
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch(`/api/quotes/${quote.id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete quote");
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      setDeleteDialogOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["quotes"] });
-      if (window.location.pathname === `/${quote.id}`) {
-        window.location.href = "/";
-      }
-    },
-  });
-
   const handleDelete = () => {
-    deleteMutation.mutate();
+    deleteMutation.mutate(quote.id, {
+      onSuccess: () => {
+        setDeleteDialogOpen(false);
+        if (window.location.pathname === `/${quote.shortId}`) {
+          navigate({ to: "/" });
+        }
+      },
+    });
   };
 
   return (
@@ -112,7 +86,7 @@ export function QuoteView({
       }}
     >
       <Stack direction="row" spacing={1} alignItems="center">
-        <Link href={`/${quote.id}`}>
+        <Link to="/$quoteId" params={{ quoteId: String(quote.shortId) }}>
           <Typography
             variant="body2"
             color="text.secondary"

@@ -1,16 +1,20 @@
-FROM node:23-alpine
+# Build stage
+FROM oven/bun:1-alpine AS build
 
 WORKDIR /app
 
-COPY package.json .
-COPY package-lock.json .
-
-RUN npm install
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 COPY . .
-RUN npm run db:generate
-RUN npm run build
+RUN bun run build
 
-EXPOSE 3000
+# Production stage
+FROM nginx:alpine
 
-CMD ["npm", "run", "start"]
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker-entrypoint.sh /docker-entrypoint.d/40-generate-config.sh
+RUN chmod +x /docker-entrypoint.d/40-generate-config.sh
+
+EXPOSE 80
