@@ -350,43 +350,47 @@ onBootstrap((e) => {
 });
 
 // ---------------------------------------------------------------------------
-// h) SMTP configuration from env vars.
-//    PocketBase normally stores mail settings in the admin UI (pb_data). For
-//    a declarative deployment, configure them from the environment instead:
-//    when SMTP_HOST is set, mail is enabled and configured on startup;
-//    when unset, the existing settings are left untouched.
+// h) Application + SMTP configuration from env vars.
+//    PocketBase normally stores these in the admin UI (pb_data). For a
+//    declarative deployment, configure them from the environment instead:
+//    - APP_NAME sets the application name (used in the OTP email subject,
+//      "OTP for <APP_NAME>"); defaults to "miniqdb" so it never falls back to
+//      PocketBase's "Acme" default.
+//    - when SMTP_HOST is set, mail is enabled and configured on startup;
+//      when unset, the existing mail settings are left untouched.
 // ---------------------------------------------------------------------------
 onBootstrap((e) => {
   // Finish bootstrap first so settings are loaded.
   e.next();
 
-  const host = $os.getenv("SMTP_HOST");
-  if (!host) {
-    return;
-  }
-
   try {
     const settings = e.app.settings();
-    settings.smtp.enabled = true;
-    settings.smtp.host = host;
-    settings.smtp.port = parseInt($os.getenv("SMTP_PORT") || "587", 10);
-    settings.smtp.username = $os.getenv("SMTP_USERNAME") || "";
-    settings.smtp.password = $os.getenv("SMTP_PASSWORD") || "";
-    // TLS=false uses StartTLS (port 587); set SMTP_TLS=true for implicit
-    // TLS (port 465).
-    settings.smtp.tls = ($os.getenv("SMTP_TLS") || "false").toLowerCase() === "true";
 
-    const senderAddress = $os.getenv("SMTP_SENDER_ADDRESS");
-    if (senderAddress) {
-      settings.meta.senderAddress = senderAddress;
-    }
-    const senderName = $os.getenv("SMTP_SENDER_NAME");
-    if (senderName) {
-      settings.meta.senderName = senderName;
+    settings.meta.appName = $os.getenv("APP_NAME") || "miniqdb";
+
+    const host = $os.getenv("SMTP_HOST");
+    if (host) {
+      settings.smtp.enabled = true;
+      settings.smtp.host = host;
+      settings.smtp.port = parseInt($os.getenv("SMTP_PORT") || "587", 10);
+      settings.smtp.username = $os.getenv("SMTP_USERNAME") || "";
+      settings.smtp.password = $os.getenv("SMTP_PASSWORD") || "";
+      // TLS=false uses StartTLS (port 587); set SMTP_TLS=true for implicit
+      // TLS (port 465).
+      settings.smtp.tls = ($os.getenv("SMTP_TLS") || "false").toLowerCase() === "true";
+
+      const senderAddress = $os.getenv("SMTP_SENDER_ADDRESS");
+      if (senderAddress) {
+        settings.meta.senderAddress = senderAddress;
+      }
+      const senderName = $os.getenv("SMTP_SENDER_NAME");
+      if (senderName) {
+        settings.meta.senderName = senderName;
+      }
     }
 
     e.app.save(settings);
   } catch (err) {
-    console.log(`Failed to apply SMTP settings from env: ${err}`);
+    console.log(`Failed to apply settings from env: ${err}`);
   }
 });
