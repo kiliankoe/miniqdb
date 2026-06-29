@@ -72,4 +72,4 @@ miniqdb is a minimalistic quote database web application for private communities
 - `NOTHING_TO_SEE_HERE_BUTTON_TEXT` - Easter egg button (default: empty/hidden)
 - `ALLOWED_DOMAINS` - Comma-separated allowed email domains (on PocketBase service)
 - `ADMIN_EMAILS` - Comma-separated admin emails (on PocketBase service); authoritative when set: reconciled on startup via `onBootstrap` and at user-create time in `hooks.pb.js`
-- PocketBase SMTP settings configured via PocketBase admin UI
+- `SMTP_*` - `SMTP_HOST`/`SMTP_PORT`/`SMTP_USERNAME`/`SMTP_PASSWORD`/`SMTP_TLS`/`SMTP_SENDER_ADDRESS`/`SMTP_SENDER_NAME` (on PocketBase service); when `SMTP_HOST` is set, an `onBootstrap` hook configures mail on startup. Otherwise configure SMTP via the PocketBase admin UI.

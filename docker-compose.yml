@@ -9,6 +9,15 @@ services:
     environment:
       - ALLOWED_DOMAINS=${ALLOWED_DOMAINS:-}
       - ADMIN_EMAILS=${ADMIN_EMAILS:-}
+      # SMTP (optional): when SMTP_HOST is set, mail is configured on startup.
+      # Otherwise configure it in the PocketBase admin UI instead.
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_TLS=${SMTP_TLS:-false}
+      - SMTP_SENDER_ADDRESS=${SMTP_SENDER_ADDRESS:-}
+      - SMTP_SENDER_NAME=${SMTP_SENDER_NAME:-}
     restart: unless-stopped
 
   frontend:

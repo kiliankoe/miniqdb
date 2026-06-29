@@ -15,7 +15,7 @@ docker compose up pocketbase
 This starts PocketBase on [http://localhost:8090](http://localhost:8090). On first run, visit the admin UI at [http://localhost:8090/\_/](http://localhost:8090/_/) to:
 
 1. Create a superuser account.
-2. Configure SMTP under Settings > Mail (required for OTP login emails — without this, no login codes will be delivered).
+2. Configure SMTP (required for OTP login emails — without this, no login codes will be delivered), either under Settings > Mail in the admin UI, or declaratively via the `SMTP_*` environment variables (see the table below).
 
 ### Admin users
 
@@ -53,6 +53,13 @@ This builds and starts both the frontend (nginx on port 80) and PocketBase (port
 | `NOTHING_TO_SEE_HERE_BUTTON_TEXT` | _(empty)_ | Easter egg button (hidden when empty) |
 | `ALLOWED_DOMAINS`                 | _(none)_  | Comma-separated allowed email domains |
 | `ADMIN_EMAILS`                    | _(none)_  | Comma-separated admin emails (authoritative when set) |
+| `SMTP_HOST`                       | _(none)_  | SMTP server host; when set, mail is configured on startup |
+| `SMTP_PORT`                       | `587`     | SMTP server port |
+| `SMTP_USERNAME`                   | _(none)_  | SMTP auth username |
+| `SMTP_PASSWORD`                   | _(none)_  | SMTP auth password |
+| `SMTP_TLS`                        | `false`   | `true` for implicit TLS (port 465); `false` uses StartTLS (587) |
+| `SMTP_SENDER_ADDRESS`             | _(none)_  | From address for OTP emails |
+| `SMTP_SENDER_NAME`                | _(none)_  | From name for OTP emails |
 
 ## Data Migration
 
