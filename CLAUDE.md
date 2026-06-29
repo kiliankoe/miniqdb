@@ -73,3 +73,4 @@ miniqdb is a minimalistic quote database web application for private communities
 - `ALLOWED_DOMAINS` - Comma-separated allowed email domains (on PocketBase service)
 - `ADMIN_EMAILS` - Comma-separated admin emails (on PocketBase service); authoritative when set: reconciled on startup via `onBootstrap` and at user-create time in `hooks.pb.js`
 - `SMTP_*` - `SMTP_HOST`/`SMTP_PORT`/`SMTP_USERNAME`/`SMTP_PASSWORD`/`SMTP_TLS`/`SMTP_SENDER_ADDRESS`/`SMTP_SENDER_NAME` (on PocketBase service); when `SMTP_HOST` is set, an `onBootstrap` hook configures mail on startup. Otherwise configure SMTP via the PocketBase admin UI.
+- `APP_NAME` / `BASE_URL` - also read by the PocketBase new-quote webhook hook to render the Slack notification (`New <APP_NAME> quote added.` + a `Quote #N` link to `BASE_URL/<shortId>`)

@@ -150,9 +150,14 @@ onRecordAfterCreateSuccess((e) => {
     return;
   }
 
-  const quoteText = e.record.getString("text");
-  const quoteAuthor = e.record.getString("author");
   const quoteShortId = e.record.getInt("shortId");
+  const appName = $os.getenv("APP_NAME") || "miniqdb";
+  const baseUrl = $os.getenv("BASE_URL") || "";
+  // Match the original notification format: app name + a "Quote #N" link, no
+  // quote text or author.
+  const quoteLink = baseUrl
+    ? `<${baseUrl}/${quoteShortId}|Quote #${quoteShortId}>`
+    : `Quote #${quoteShortId}`;
 
   for (const webhook of webhooks) {
     const url = webhook.getString("url");
@@ -165,13 +170,23 @@ onRecordAfterCreateSuccess((e) => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            text: `New ${appName} quote added.`,
             blocks: [
               {
                 type: "section",
                 text: {
                   type: "mrkdwn",
-                  text: `*New quote #${quoteShortId}*\n>${quoteText}\n_-- ${quoteAuthor}_`,
+                  text: `New ${appName} quote added.`,
                 },
+              },
+              {
+                type: "context",
+                elements: [
+                  {
+                    type: "mrkdwn",
+                    text: quoteLink,
+                  },
+                ],
               },
             ],
           }),
@@ -184,13 +199,9 @@ onRecordAfterCreateSuccess((e) => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             event: "quote.created",
-            data: {
-              id: e.record.id,
-              shortId: quoteShortId,
-              text: quoteText,
-              author: quoteAuthor,
-              score: e.record.getInt("score"),
-              created: e.record.getString("created"),
+            quote: {
+              id: quoteShortId,
+              createdAt: e.record.getString("created"),
             },
           }),
         });

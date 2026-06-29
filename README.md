@@ -53,6 +53,7 @@ This builds and starts both the frontend (nginx on port 80) and PocketBase (port
 | `NOTHING_TO_SEE_HERE_BUTTON_TEXT` | _(empty)_ | Easter egg button (hidden when empty) |
 | `ALLOWED_DOMAINS`                 | _(none)_  | Comma-separated allowed email domains |
 | `ADMIN_EMAILS`                    | _(none)_  | Comma-separated admin emails (authoritative when set) |
+| `BASE_URL`                        | _(none)_  | Public app URL; used for the `Quote #N` link in webhook notifications |
 | `SMTP_HOST`                       | _(none)_  | SMTP server host; when set, mail is configured on startup |
 | `SMTP_PORT`                       | `587`     | SMTP server port |
 | `SMTP_USERNAME`                   | _(none)_  | SMTP auth username |

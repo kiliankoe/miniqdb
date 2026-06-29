@@ -9,6 +9,9 @@ services:
     environment:
       - ALLOWED_DOMAINS=${ALLOWED_DOMAINS:-}
       - ADMIN_EMAILS=${ADMIN_EMAILS:-}
+      # Used by the new-quote webhook notification (app name + "Quote #N" link).
+      - APP_NAME=${APP_NAME:-miniqdb}
+      - BASE_URL=${BASE_URL:-}
       # SMTP (optional): when SMTP_HOST is set, mail is configured on startup.
       # Otherwise configure it in the PocketBase admin UI instead.
       - SMTP_HOST=${SMTP_HOST:-}
