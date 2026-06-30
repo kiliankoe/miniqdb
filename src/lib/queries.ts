@@ -22,6 +22,13 @@ function getSortString(sort: Sort): string {
   }
 }
 
+// Escape a literal string for use inside a PocketBase filter `"..."`
+// expression. Backslash is the escape char, so it must be escaped first,
+// then the surrounding quotes.
+function escapeFilterString(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
 async function enrichWithVotes(
   quotes: QuoteRecord[],
 ): Promise<QuoteWithVote[]> {
@@ -100,7 +107,7 @@ export function useSearchQuotes(query: string) {
     queryFn: async () => {
       const pb = getPb();
       const result = await pb.collection("quotes").getList<QuoteRecord>(1, 50, {
-        filter: `text ~ "${query.replace(/"/g, '\\"')}"`,
+        filter: `text ~ "${escapeFilterString(query)}"`,
         sort: "-score",
       });
       return enrichWithVotes(result.items);
