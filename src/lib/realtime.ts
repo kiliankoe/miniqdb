@@ -11,9 +11,10 @@ export function subscribeToRealtime(queryClient: QueryClient) {
     const record = e.record as unknown as QuoteRecord;
 
     if (e.action === "create") {
-      // Invalidate newest queries so new quotes appear
+      // A new quote may belong in any sort order (newest, oldest, top), so
+      // invalidate all quote-list caches rather than just "newest".
       queryClient.invalidateQueries({
-        queryKey: ["quotes", "newest"],
+        queryKey: ["quotes"],
       });
     }
 
