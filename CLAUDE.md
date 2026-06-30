@@ -15,6 +15,11 @@ miniqdb is a minimalistic quote database web application for private communities
 - `bun run lint` - Run Biome linter
 - `bun run format` - Format code with Biome
 
+### Testing
+- `bun run test` - Run frontend unit tests (Vitest, jsdom)
+- `bun run test:integration` - Run PocketBase hook integration tests (boots an ephemeral PocketBase binary against the real hooks/migrations; downloads the pinned binary to `.pb-test/` on first run)
+- `bun run test:all` - Run both projects
+
 ### Docker
 - `docker compose up` - Start both frontend and PocketBase
 - `docker compose up pocketbase` - Start PocketBase only (for dev with Vite)
