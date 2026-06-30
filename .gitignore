@@ -6,6 +6,8 @@
 
 # testing
 /coverage
+# cached PocketBase binary for integration tests
+/.pb-test
 
 # misc
 .DS_Store
