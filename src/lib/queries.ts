@@ -9,7 +9,7 @@ import type {
   WebhookRecord,
 } from "./types";
 
-function getSortString(sort: Sort): string {
+export function getSortString(sort: Sort): string {
   switch (sort) {
     case "newest":
       return "-created";
@@ -25,7 +25,7 @@ function getSortString(sort: Sort): string {
 // Escape a literal string for use inside a PocketBase filter `"..."`
 // expression. Backslash is the escape char, so it must be escaped first,
 // then the surrounding quotes.
-function escapeFilterString(value: string): string {
+export function escapeFilterString(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
