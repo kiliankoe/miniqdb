@@ -52,6 +52,26 @@ onRecordUpdate((e) => {
   e.next();
 }, "quotes");
 
+// Reject vote values outside {-1, 1}. The schema only enforces "required
+// number", so without this a direct API call could submit arbitrary values
+// and distort the denormalized score. Vote removal happens via record
+// deletion, not a 0-value record.
+onRecordCreate((e) => {
+  const value = e.record.getInt("value");
+  if (value !== 1 && value !== -1) {
+    throw new BadRequestError("Vote value must be 1 or -1.");
+  }
+  e.next();
+}, "votes");
+
+onRecordUpdate((e) => {
+  const value = e.record.getInt("value");
+  if (value !== 1 && value !== -1) {
+    throw new BadRequestError("Vote value must be 1 or -1.");
+  }
+  e.next();
+}, "votes");
+
 // Default created/updated for new votes (app votes and the auto-vote hook).
 // The migration provides historical timestamps, which are left untouched.
 onRecordCreate((e) => {
