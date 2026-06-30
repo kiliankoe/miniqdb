@@ -160,6 +160,18 @@ onRecordAfterUpdateSuccess((e) => {
 
 onRecordAfterDeleteSuccess((e) => {
   const quoteId = e.record.getString("quote");
+
+  // When a quote is deleted, its votes are cascade-removed and this hook
+  // fires for each of them. The quote is already gone, so there's no score
+  // to recompute — skip the wasted work.
+  let quote = null;
+  try {
+    quote = e.app.findRecordById("quotes", quoteId);
+  } catch (_) {
+    e.next();
+    return;
+  }
+
   let totalScore = 0;
   try {
     const votes = e.app.findRecordsByFilter("votes", `quote = "${quoteId}"`, "", 0, 0);
@@ -168,7 +180,6 @@ onRecordAfterDeleteSuccess((e) => {
     }
   } catch (_) {}
   try {
-    const quote = e.app.findRecordById("quotes", quoteId);
     quote.set("score", totalScore);
     e.app.save(quote);
   } catch (_) {}
