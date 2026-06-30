@@ -273,6 +273,7 @@ export function useDeleteQuote() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["quotes"] });
+      queryClient.invalidateQueries({ queryKey: ["quote"] });
     },
   });
 }
