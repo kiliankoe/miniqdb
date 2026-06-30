@@ -18,6 +18,14 @@ export function subscribeToRealtime(queryClient: QueryClient) {
     }
 
     if (e.action === "update") {
+      // Patch the full record into cached quotes. Preserve the current user's
+      // own `vote` field, which isn't part of the quote record itself.
+      const merge = (q: QuoteWithVote): QuoteWithVote => ({
+        ...q,
+        ...record,
+        vote: q.vote,
+      });
+
       // Update score in all cached quote lists
       queryClient
         .getQueryCache()
@@ -28,7 +36,7 @@ export function subscribeToRealtime(queryClient: QueryClient) {
             return {
               ...old,
               quotes: old.quotes.map((q) =>
-                q.id === record.id ? { ...q, score: record.score } : q,
+                q.id === record.id ? merge(q) : q,
               ),
             };
           });
@@ -41,7 +49,7 @@ export function subscribeToRealtime(queryClient: QueryClient) {
         .forEach((query) => {
           queryClient.setQueryData<QuoteWithVote>(query.queryKey, (old) => {
             if (!old || old.id !== record.id) return old;
-            return { ...old, score: record.score };
+            return merge(old);
           });
         });
 
@@ -52,9 +60,7 @@ export function subscribeToRealtime(queryClient: QueryClient) {
         .forEach((query) => {
           queryClient.setQueryData<QuoteWithVote[]>(query.queryKey, (old) => {
             if (!old) return old;
-            return old.map((q) =>
-              q.id === record.id ? { ...q, score: record.score } : q,
-            );
+            return old.map((q) => (q.id === record.id ? merge(q) : q));
           });
         });
     }
