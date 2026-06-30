@@ -67,7 +67,10 @@ export function subscribeToRealtime(queryClient: QueryClient) {
     }
 
     if (e.action === "delete") {
+      // Drop both the list caches and any stale single-quote detail entry, so
+      // a user viewing a quote deleted elsewhere doesn't keep a phantom copy.
       queryClient.invalidateQueries({ queryKey: ["quotes"] });
+      queryClient.invalidateQueries({ queryKey: ["quote"] });
     }
   });
 
