@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type PocketBase from "pocketbase";
 import { getPb } from "./pocketbase";
 import type {
   QuoteRecord,
@@ -297,17 +298,31 @@ export function useDeleteQuote() {
   });
 }
 
+// Read the fresh user record instead of the login-time authStore snapshot so
+// isAdmin changes (e.g. an ADMIN_EMAILS promotion) show up without re-login.
+// Server-side rules enforce the real boundary either way; this only affects
+// what the UI offers. Falls back to the snapshot when the fetch fails.
+export async function fetchIsAdmin(
+  pb: Pick<PocketBase, "authStore" | "collection">,
+): Promise<boolean> {
+  const snapshot = pb.authStore.record;
+  if (!snapshot) return false;
+  try {
+    const user = await pb.collection("users").getOne(snapshot.id);
+    return user.isAdmin === true;
+  } catch {
+    return snapshot.isAdmin === true;
+  }
+}
+
 export function useIsAdmin() {
   const pb = getPb();
-  const user = pb.authStore.record;
+  const userId = pb.authStore.record?.id;
   return useQuery({
-    queryKey: ["admin", user?.email],
-    queryFn: () => {
-      if (!user) return false;
-      return user.isAdmin === true;
-    },
-    enabled: !!user,
-    staleTime: Number.POSITIVE_INFINITY,
+    queryKey: ["admin", userId],
+    queryFn: () => fetchIsAdmin(pb),
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 5,
   });
 }
 
