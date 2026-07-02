@@ -29,6 +29,43 @@ describe("quote creation hooks", () => {
     expect(second.shortId).toBe(first.shortId + 1);
   });
 
+  it("assigns unique shortIds under concurrent creates", async () => {
+    // requestKey: null disables the SDK's auto-cancellation of duplicate
+    // requests so all creates actually hit the server concurrently.
+    const results = await Promise.allSettled(
+      Array.from({ length: 10 }, (_, i) =>
+        env.pb
+          .collection("quotes")
+          .create({ text: `concurrent quote ${i}`, author: authorA }, {
+            requestKey: null,
+          }),
+      ),
+    );
+
+    const fulfilled = results.filter((r) => r.status === "fulfilled");
+    expect(fulfilled).toHaveLength(10);
+
+    const shortIds = fulfilled.map(
+      (r) => (r as PromiseFulfilledResult<{ shortId: number }>).value.shortId,
+    );
+    expect(new Set(shortIds).size).toBe(10);
+    expect(shortIds.every((id) => id > 0)).toBe(true);
+  });
+
+  it("continues the sequence after an explicitly provided shortId", async () => {
+    // The data-migration path supplies historical shortIds; the allocation
+    // counter must advance past them.
+    const imported = await env.pb.collection("quotes").create({
+      text: "imported quote",
+      author: authorA,
+      shortId: 5000,
+    });
+    expect(imported.shortId).toBe(5000);
+
+    const next = await createQuote("quote after import");
+    expect(next.shortId).toBe(5001);
+  });
+
   it("auto-votes +1 for the author, denormalizing score to 1", async () => {
     const quote = await createQuote("auto-voted quote");
     const fresh = await getQuote(quote.id);

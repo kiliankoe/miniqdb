@@ -19,29 +19,34 @@ onRecordCreate((e) => {
     e.record.set("updated", nowIso);
   }
 
-  if (e.record.getInt("shortId") > 0) {
+  const provided = e.record.getInt("shortId");
+  if (provided > 0) {
+    // Import path (data migration): keep the caller's shortId and make sure
+    // the counter stays ahead of it so later allocations don't collide.
+    e.app
+      .db()
+      .newQuery(
+        "UPDATE shortid_counter SET value = MAX(value, {:v}) WHERE id = 1"
+      )
+      .bind({ v: provided })
+      .execute();
     e.next();
     return;
   }
 
-  let maxShortId = 0;
-
-  try {
-    const latest = e.app.findRecordsByFilter(
-      "quotes",
-      "id != ''",
-      "-shortId",
-      1,
-      0
-    );
-    if (latest && latest.length > 0) {
-      maxShortId = latest[0].getInt("shortId");
-    }
-  } catch (_) {
-    // No quotes exist yet, start at 1.
-  }
-
-  e.record.set("shortId", maxShortId + 1);
+  // Atomic allocation via a single-row counter. A SELECT MAX + 1 here races
+  // under concurrent creates (two requests both read the same max and the
+  // loser fails the unique index). The single UPDATE statement is serialized
+  // by SQLite, so each create gets a distinct value. If the record later
+  // fails validation the increment leaves a gap, which is harmless.
+  const row = new DynamicModel({ value: 0 });
+  e.app
+    .db()
+    .newQuery(
+      "UPDATE shortid_counter SET value = value + 1 WHERE id = 1 RETURNING value"
+    )
+    .one(row);
+  e.record.set("shortId", row.value);
 
   e.next();
 }, "quotes");
