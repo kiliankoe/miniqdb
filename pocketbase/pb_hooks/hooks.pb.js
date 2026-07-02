@@ -47,8 +47,16 @@ onRecordCreate((e) => {
 }, "quotes");
 
 // Keep `updated` current on quote edits (plain date field, so not automatic).
+// The score denorm hook also saves the quote on every vote — those saves must
+// not bump `updated`, so only refresh it on actual content changes.
 onRecordUpdate((e) => {
-  e.record.set("updated", new Date().toISOString());
+  const original = e.record.original();
+  if (
+    e.record.getString("text") !== original.getString("text") ||
+    e.record.getString("author") !== original.getString("author")
+  ) {
+    e.record.set("updated", new Date().toISOString());
+  }
   e.next();
 }, "quotes");
 

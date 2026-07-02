@@ -61,6 +61,36 @@ describe("vote scoring hooks", () => {
   });
 });
 
+describe("quote updated timestamp", () => {
+  it("does not bump `updated` when a vote changes the score", async () => {
+    const quote = await createQuote("timestamp quote");
+    const before = (await getQuote(quote.id)).updated;
+
+    // Ensure a wrongly-bumped timestamp would actually differ.
+    await new Promise((r) => setTimeout(r, 20));
+    await env.pb
+      .collection("votes")
+      .create({ quote: quote.id, author: authorB, value: 1 });
+
+    const after = await getQuote(quote.id);
+    expect(after.score).toBe(2); // score denorm still ran
+    expect(after.updated).toBe(before);
+  });
+
+  it("bumps `updated` when the text is edited", async () => {
+    const quote = await createQuote("editable quote");
+    const before = (await getQuote(quote.id)).updated;
+
+    await new Promise((r) => setTimeout(r, 20));
+    await env.pb.collection("quotes").update(quote.id, { text: "edited text" });
+
+    const after = (await getQuote(quote.id)).updated;
+    expect(new Date(after).getTime()).toBeGreaterThan(
+      new Date(before).getTime(),
+    );
+  });
+});
+
 describe("vote value validation hook", () => {
   it("rejects a vote value of 0 on create", async () => {
     const quote = await createQuote("validation quote");
