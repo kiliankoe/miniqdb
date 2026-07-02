@@ -150,19 +150,28 @@ onRecordAfterCreateSuccess((e) => {
 }, "votes");
 
 onRecordAfterUpdateSuccess((e) => {
-  const quoteId = e.record.getString("quote");
-  let totalScore = 0;
-  try {
-    const votes = e.app.findRecordsByFilter("votes", `quote = "${quoteId}"`, "", 0, 0);
-    for (const vote of votes) {
-      totalScore += vote.getInt("value");
-    }
-  } catch (_) {}
-  try {
-    const quote = e.app.findRecordById("quotes", quoteId);
-    quote.set("score", totalScore);
-    e.app.save(quote);
-  } catch (_) {}
+  // If the vote's quote relation itself changed (raw API allows it), the old
+  // quote's score is stale too — recompute both.
+  const quoteIds = [e.record.getString("quote")];
+  const oldQuoteId = e.record.original().getString("quote");
+  if (oldQuoteId && quoteIds.indexOf(oldQuoteId) === -1) {
+    quoteIds.push(oldQuoteId);
+  }
+
+  for (const quoteId of quoteIds) {
+    let totalScore = 0;
+    try {
+      const votes = e.app.findRecordsByFilter("votes", `quote = "${quoteId}"`, "", 0, 0);
+      for (const vote of votes) {
+        totalScore += vote.getInt("value");
+      }
+    } catch (_) {}
+    try {
+      const quote = e.app.findRecordById("quotes", quoteId);
+      quote.set("score", totalScore);
+      e.app.save(quote);
+    } catch (_) {}
+  }
   e.next();
 }, "votes");
 

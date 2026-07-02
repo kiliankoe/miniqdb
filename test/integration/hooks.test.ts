@@ -61,6 +61,25 @@ describe("vote scoring hooks", () => {
   });
 });
 
+describe("vote reassignment", () => {
+  it("recalculates both quotes when a vote's quote relation changes", async () => {
+    const quoteA = await createQuote("vote move source"); // auto-vote: score 1
+    const quoteB = await createQuote("vote move target"); // auto-vote: score 1
+
+    const bobVote = await env.pb
+      .collection("votes")
+      .create({ quote: quoteA.id, author: authorB, value: 1 });
+    expect((await getQuote(quoteA.id)).score).toBe(2);
+
+    // Point bob's vote at quoteB instead (only possible via the raw API, but
+    // permitted by the update rule).
+    await env.pb.collection("votes").update(bobVote.id, { quote: quoteB.id });
+
+    expect((await getQuote(quoteB.id)).score).toBe(2);
+    expect((await getQuote(quoteA.id)).score).toBe(1);
+  });
+});
+
 describe("quote updated timestamp", () => {
   it("does not bump `updated` when a vote changes the score", async () => {
     const quote = await createQuote("timestamp quote");
