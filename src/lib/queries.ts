@@ -70,14 +70,26 @@ export function useQuotes(sort: Sort, page: number, limit: number) {
   });
 }
 
+// The quote-detail route param comes straight from the URL; only a positive
+// integer can match a quote, and anything else must not be interpolated into
+// the filter expression.
+export function parseShortId(param: string): number | null {
+  const n = Number(param);
+  return Number.isSafeInteger(n) && n > 0 ? n : null;
+}
+
 export function useQuote(shortId: string) {
   return useQuery({
     queryKey: ["quote", shortId],
     queryFn: async () => {
+      const parsed = parseShortId(shortId);
+      if (parsed === null) {
+        throw new Error("Quote not found");
+      }
       const pb = getPb();
       const result = await pb
         .collection("quotes")
-        .getFirstListItem<QuoteRecord>(`shortId = ${shortId}`);
+        .getFirstListItem<QuoteRecord>(`shortId = ${parsed}`);
       const enriched = await enrichWithVotes([result]);
       return enriched[0];
     },

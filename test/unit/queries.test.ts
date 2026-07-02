@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeFilterString, getSortString } from "@/lib/queries";
+import { escapeFilterString, getSortString, parseShortId } from "@/lib/queries";
 
 describe("getSortString", () => {
   it("maps each sort to its PocketBase sort expression", () => {
@@ -7,6 +7,26 @@ describe("getSortString", () => {
     expect(getSortString("oldest")).toBe("+created");
     expect(getSortString("top")).toBe("-score,-created");
     expect(getSortString("random")).toBe("@random");
+  });
+});
+
+describe("parseShortId", () => {
+  it("parses positive integers", () => {
+    expect(parseShortId("1")).toBe(1);
+    expect(parseShortId("4823")).toBe(4823);
+  });
+
+  it("rejects non-numeric input instead of passing it into the filter", () => {
+    expect(parseShortId("abc")).toBeNull();
+    expect(parseShortId('1 || id != ""')).toBeNull();
+    expect(parseShortId("12abc")).toBeNull();
+  });
+
+  it("rejects zero, negatives, fractions, and empty input", () => {
+    expect(parseShortId("0")).toBeNull();
+    expect(parseShortId("-3")).toBeNull();
+    expect(parseShortId("1.5")).toBeNull();
+    expect(parseShortId("")).toBeNull();
   });
 });
 
