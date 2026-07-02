@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSearchQuotes, useIsAdmin } from "@/lib/queries";
 import { QuoteView } from "@/components/QuoteView";
 import useDebounce from "@/hooks/useDebounce";
@@ -23,19 +23,18 @@ function SearchPage() {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const { data: isAdmin } = useIsAdmin();
+  const navigate = useNavigate();
 
+  // Keep ?q= shareable without pushing a history entry per keystroke. Going
+  // through the router (instead of history.replaceState) keeps its search
+  // state in sync.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const currentQ = params.get("q") || "";
-    if (currentQ === debouncedSearchQuery) return;
-    if (debouncedSearchQuery) {
-      params.set("q", debouncedSearchQuery);
-    } else {
-      params.delete("q");
-    }
-    const newUrl = `/search?${params.toString()}`;
-    window.history.replaceState(null, "", newUrl);
-  }, [debouncedSearchQuery]);
+    navigate({
+      to: "/search",
+      search: debouncedSearchQuery ? { q: debouncedSearchQuery } : {},
+      replace: true,
+    });
+  }, [debouncedSearchQuery, navigate]);
 
   const {
     data: quotes,
