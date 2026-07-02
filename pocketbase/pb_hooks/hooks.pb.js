@@ -201,6 +201,9 @@ onRecordAfterCreateSuccess((e) => {
   }
 
   const quoteShortId = e.record.getInt("shortId");
+  // $http.send blocks the create response; without a timeout a hung endpoint
+  // would stall quote submission for the JSVM default of 120s per webhook.
+  const webhookTimeoutSeconds = 5;
   const appName = $os.getenv("APP_NAME") || "miniqdb";
   const baseUrl = $os.getenv("BASE_URL") || "";
   // Match the original notification format: app name + a "Quote #N" link, no
@@ -218,6 +221,7 @@ onRecordAfterCreateSuccess((e) => {
         $http.send({
           url: url,
           method: "POST",
+          timeout: webhookTimeoutSeconds,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             text: `New ${appName} quote added.`,
@@ -246,6 +250,7 @@ onRecordAfterCreateSuccess((e) => {
         $http.send({
           url: url,
           method: "POST",
+          timeout: webhookTimeoutSeconds,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             event: "quote.created",
