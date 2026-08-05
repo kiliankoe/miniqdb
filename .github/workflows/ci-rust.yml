@@ -1,0 +1,31 @@
+name: CLI CI
+
+on:
+  push:
+    branches: [main]
+    paths: ["cli/**", ".github/workflows/ci-rust.yml"]
+  pull_request:
+    paths: ["cli/**", ".github/workflows/ci-rust.yml"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: cli
+      # Integration tests boot a real PocketBase; cache the pinned binary.
+      - uses: actions/cache@v4
+        with:
+          path: .pb-test
+          key: pb-test-0.36.2
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test

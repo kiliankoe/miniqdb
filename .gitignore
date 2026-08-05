@@ -32,3 +32,6 @@ docker-compose.local.yml
 
 # direnv
 .direnv
+
+# nix build output
+result

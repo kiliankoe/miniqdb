@@ -86,6 +86,43 @@ The usual create hooks run (shortId allocation, the author's automatic +1 vote, 
 
 Browser sessions use the same token mechanics; they last 180 days and are silently renewed on each app load, so interactive users should rarely see the login prompt.
 
+## CLI (mqdb)
+
+`cli/` contains `mqdb`, a Rust CLI and TUI for interacting with a miniqdb instance from the terminal.
+
+Install via nix (`packages.mqdb` and `overlays.default` are exposed by this flake):
+
+```nix
+# flake input
+inputs.miniqdb.url = "github:kiliankoe/miniqdb";
+# then either consume the overlay …
+nixpkgs.overlays = [ inputs.miniqdb.overlays.default ];   # → pkgs.mqdb
+# … or reference the package directly
+environment.systemPackages = [ inputs.miniqdb.packages.${system}.mqdb ];
+```
+
+Or without nix: `cargo install --path cli`.
+
+Log in interactively (OTP by email, same as the website) or with an API token from `scripts/mint-token.ts`:
+
+```bash
+mqdb login
+mqdb login --url https://quotes.example.com --token "$TOKEN"
+```
+
+Credentials land in `~/.config/mqdb/config.json`. Then:
+
+```bash
+mqdb                       # TUI: sorted quote lists, voting, submitting
+mqdb list --sort top       # newest|oldest|top|random, --page/--limit/--json
+mqdb submit "some quote"   # or: fortune | mqdb submit
+mqdb search "some text"    # score-sorted text search
+```
+
+TUI keys: `tab` switch sorting, `j`/`k` move, `h`/`l` pages, `u`/`d` vote, `x` clear vote, `s` submit, `/` search, `r` refresh/reshuffle, `q` quit.
+
+Development: `cargo test` in `cli/` runs unit tests plus integration tests that boot a real PocketBase (sharing the `.pb-test/` binary cache with the web integration tests).
+
 ## Data Migration
 
 To migrate from the old Next.js/Prisma/SQLite setup:
