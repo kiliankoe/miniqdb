@@ -62,6 +62,30 @@ This builds and starts both the frontend (nginx on port 80) and PocketBase (port
 | `SMTP_SENDER_ADDRESS`             | _(none)_  | From address for OTP emails |
 | `SMTP_SENDER_NAME`                | _(none)_  | From name for OTP emails |
 
+## API Tokens
+
+Every quote and vote goes through the regular PocketBase record API, so anything that holds a valid auth token can submit quotes — no OTP login required. PocketBase's impersonation feature serves as the API key mechanism: a superuser mints a long-lived, nonrenewable token for a user, and requests made with it are subject to the normal API rules (quotes must carry the token owner's email as `author`).
+
+Mint a token (default validity: 365 days):
+
+```bash
+PB_ADMIN_EMAIL=admin@example.com PB_ADMIN_PASSWORD=secret \
+  bun scripts/mint-token.ts https://quotes.example.com me@example.com 365
+```
+
+Submit a quote with it:
+
+```bash
+curl -H "Authorization: $TOKEN" \
+  -F "text=Someone said something funny" \
+  -F "author=me@example.com" \
+  https://quotes.example.com/api/collections/quotes/records
+```
+
+The usual create hooks run (shortId allocation, the author's automatic +1 vote, webhook notifications). There is no per-token revocation: changing the user's password invalidates all of that user's tokens.
+
+Browser sessions use the same token mechanics; they last 180 days and are silently renewed on each app load, so interactive users should rarely see the login prompt.
+
 ## Data Migration
 
 To migrate from the old Next.js/Prisma/SQLite setup:

@@ -27,6 +27,9 @@ miniqdb is a minimalistic quote database web application for private communities
 ### Migration
 - `bun scripts/migrate.ts <sqlite-db-path> <pocketbase-url>` - Migrate data from old SQLite DB to PocketBase
 
+### API Tokens
+- `bun scripts/mint-token.ts <pocketbase-url> <user-email> [duration-days]` - Mint a long-lived impersonation token for scripted quote submission (needs `PB_ADMIN_EMAIL`/`PB_ADMIN_PASSWORD`)
+
 ## Architecture Overview
 
 ### Tech Stack
@@ -58,7 +61,7 @@ miniqdb is a minimalistic quote database web application for private communities
 
 ### Key Architectural Patterns
 - **PocketBase as sole backend**: No custom API server. Frontend calls PocketBase REST API directly.
-- **Auth via OTP**: Users log in with email code. Domain restriction enforced via PocketBase hooks.
+- **Auth via OTP**: Users log in with email code. Domain restriction enforced via PocketBase hooks. Auth tokens last 180 days and are refreshed once per app load; superusers can mint long-lived impersonation tokens for scripted access (`scripts/mint-token.ts`).
 - **Denormalized score**: Vote score stored on quote records, updated via PocketBase hooks on vote changes.
 - **Per-user vote**: Fetched client-side as a second query, merged in react-query layer.
 - **Realtime**: PocketBase subscriptions update react-query cache for live score/quote updates.
