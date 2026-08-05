@@ -135,7 +135,7 @@ fn draw_status(frame: &mut Frame, app: &App, area: Rect) {
     let left = match &app.status {
         Some((message, _)) => Line::from(format!(" {message}")).fg(ACCENT),
         None => {
-            Line::from(" j/k move · tab sort · u/d vote · o open · s submit · / search · q quit")
+            Line::from(" j/k move · h/l page · [/] sort · u/d vote · enter open · s submit · / search · q quit")
                 .dim()
         }
     };

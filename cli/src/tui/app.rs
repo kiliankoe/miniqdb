@@ -216,9 +216,9 @@ impl App {
                 self.selected = 0;
                 self.request_fetch();
             }
-            KeyCode::Tab | KeyCode::BackTab if self.search.is_none() => {
+            KeyCode::Char('[') | KeyCode::Char(']') if self.search.is_none() => {
                 let idx = TABS.iter().position(|s| *s == self.sort).unwrap_or(0);
-                let next = if key.code == KeyCode::Tab {
+                let next = if key.code == KeyCode::Char(']') {
                     (idx + 1) % TABS.len()
                 } else {
                     (idx + TABS.len() - 1) % TABS.len()
@@ -244,7 +244,7 @@ impl App {
             KeyCode::Char('d') => self.vote_toggle(-1),
             KeyCode::Char('x') => self.vote_set(0),
             KeyCode::Char('r') => self.request_fetch(),
-            KeyCode::Char('o') => self.open_selected(),
+            KeyCode::Enter => self.open_selected(),
             KeyCode::Char('s') => self.overlay = Overlay::Submit(Editor::new()),
             KeyCode::Char('/') => self.overlay = Overlay::SearchInput(String::new()),
             _ => {}
@@ -399,11 +399,11 @@ mod tests {
     }
 
     #[test]
-    fn tab_cycles_sorts_and_resets_page() {
+    fn brackets_cycle_sorts_and_reset_page() {
         let mut app = app_with_quotes(vec![quote("q1", 1, 0)]);
         app.page = 2;
         app.selected = 0;
-        app.update(key(KeyCode::Tab));
+        app.update(key(KeyCode::Char(']')));
         assert_eq!(app.sort, Sort::Top);
         assert_eq!(app.page, 1);
         assert!(matches!(
@@ -414,11 +414,11 @@ mod tests {
                 ..
             }]
         ));
-        app.update(key(KeyCode::Tab));
+        app.update(key(KeyCode::Char(']')));
         assert_eq!(app.sort, Sort::Random);
-        app.update(key(KeyCode::Tab));
+        app.update(key(KeyCode::Char(']')));
         assert_eq!(app.sort, Sort::Newest);
-        app.update(key(KeyCode::BackTab));
+        app.update(key(KeyCode::Char('[')));
         assert_eq!(app.sort, Sort::Random);
     }
 
@@ -584,9 +584,9 @@ mod tests {
     }
 
     #[test]
-    fn open_key_yields_the_quote_detail_url() {
+    fn enter_yields_the_quote_detail_url() {
         let mut app = app_with_quotes(vec![quote("q1", 1, 0)]);
-        app.update(key(KeyCode::Char('o')));
+        app.update(key(KeyCode::Enter));
         assert_eq!(
             app.take_open_url().as_deref(),
             Some("https://q.example.com/1")
@@ -594,7 +594,7 @@ mod tests {
         assert!(app.take_open_url().is_none(), "taken only once");
 
         let mut app = app_with_quotes(vec![]);
-        app.update(key(KeyCode::Char('o')));
+        app.update(key(KeyCode::Enter));
         assert!(app.take_open_url().is_none(), "no selection, no URL");
     }
 
