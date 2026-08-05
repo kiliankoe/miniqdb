@@ -6,11 +6,26 @@ import { getConfig } from "@/lib/config";
 import { getPb } from "@/lib/pocketbase";
 import { subscribeToRealtime } from "@/lib/realtime";
 
+// Tokens last 180 days (migration 4); refreshing once per app load slides
+// that window so active users never hit the OTP prompt again.
+let refreshAttempted = false;
+
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: () => {
     const pb = getPb();
     if (!pb.authStore.isValid) {
       throw redirect({ to: "/login" });
+    }
+    if (!refreshAttempted) {
+      refreshAttempted = true;
+      pb.collection("users")
+        .authRefresh()
+        .catch((err) => {
+          // Only log out on a rejected token; network hiccups shouldn't.
+          if (err?.status === 401 || err?.status === 403) {
+            pb.authStore.clear();
+          }
+        });
     }
   },
   component: AuthenticatedLayout,
