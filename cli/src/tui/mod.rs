@@ -61,6 +61,6 @@ fn event_loop(
             }
             app.update(Msg::Worker(response));
         }
-        app.expire_status();
+        app.tick();
     }
 }

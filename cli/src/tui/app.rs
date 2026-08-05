@@ -11,6 +11,7 @@ use crate::tui::editor::Editor;
 use crate::tui::worker::{Request, Response};
 
 const STATUS_TTL: Duration = Duration::from_secs(3);
+const POLL_INTERVAL: Duration = Duration::from_secs(60);
 // Tab order mirrors the website's nav: #latest, #top, #random.
 const TABS: [Sort; 3] = [Sort::Newest, Sort::Top, Sort::Random];
 
@@ -42,6 +43,7 @@ pub struct App {
     pub status: Option<(String, Instant)>,
     pub should_quit: bool,
     seq: u64,
+    last_fetch: Instant,
     /// Optimistically-applied votes awaiting server confirmation:
     /// quote id → (previous vote, previous score) for rollback.
     pending_votes: HashMap<String, (i64, i64)>,
@@ -65,6 +67,7 @@ impl App {
             status: None,
             should_quit: false,
             seq: 0,
+            last_fetch: Instant::now(),
             pending_votes: HashMap::new(),
             pending: Vec::new(),
         };
@@ -77,12 +80,28 @@ impl App {
         std::mem::take(&mut self.pending)
     }
 
-    pub fn expire_status(&mut self) {
+    /// Called every event-loop iteration: expires transient status messages
+    /// and keeps the #latest view fresh via idle polling.
+    pub fn tick(&mut self) {
         if let Some((_, since)) = &self.status
             && since.elapsed() > STATUS_TTL
         {
             self.status = None;
         }
+        if self.poll_due() {
+            self.request_fetch();
+        }
+    }
+
+    /// Only #latest auto-refreshes: random would reshuffle under the user and
+    /// search/top change too rarely to matter. Held back while a fetch or an
+    /// optimistic vote is in flight so stale data can't overwrite it.
+    fn poll_due(&self) -> bool {
+        self.search.is_none()
+            && self.sort == Sort::Newest
+            && !self.loading
+            && self.pending_votes.is_empty()
+            && self.last_fetch.elapsed() >= POLL_INTERVAL
     }
 
     fn set_status(&mut self, message: impl Into<String>) {
@@ -92,6 +111,7 @@ impl App {
     fn request_fetch(&mut self) {
         self.seq += 1;
         self.loading = true;
+        self.last_fetch = Instant::now();
         match &self.search {
             Some(query) => self.pending.push(Request::Search {
                 query: query.clone(),
@@ -540,6 +560,55 @@ mod tests {
             app.take_pending().as_slice(),
             [Request::Fetch { .. }]
         ));
+    }
+
+    #[test]
+    fn idle_poll_refetches_latest_after_interval() {
+        let mut app = app_with_quotes(vec![quote("q1", 1, 0)]);
+        app.tick();
+        assert!(app.take_pending().is_empty(), "not due yet");
+
+        // CI/dev machines are up for well over a minute, so this cannot underflow.
+        app.last_fetch = Instant::now().checked_sub(POLL_INTERVAL).unwrap();
+        app.tick();
+        assert!(matches!(
+            app.take_pending().as_slice(),
+            [Request::Fetch {
+                sort: Sort::Newest,
+                ..
+            }]
+        ));
+        // The fetch reset the timer and set loading, so it doesn't refire.
+        app.tick();
+        assert!(app.take_pending().is_empty());
+    }
+
+    #[test]
+    fn idle_poll_only_runs_on_the_latest_view() {
+        let overdue = Instant::now().checked_sub(POLL_INTERVAL).unwrap();
+
+        let mut app = app_with_quotes(vec![quote("q1", 1, 0)]);
+        app.sort = Sort::Random;
+        app.last_fetch = overdue;
+        app.tick();
+        assert!(app.take_pending().is_empty(), "random must not reshuffle");
+
+        let mut app = app_with_quotes(vec![quote("q1", 1, 0)]);
+        app.search = Some("query".into());
+        app.last_fetch = overdue;
+        app.tick();
+        assert!(
+            app.take_pending().is_empty(),
+            "search results are not polled"
+        );
+
+        // An in-flight optimistic vote defers the poll.
+        let mut app = app_with_quotes(vec![quote("q1", 1, 0)]);
+        app.update(key(KeyCode::Char('u')));
+        app.take_pending();
+        app.last_fetch = overdue;
+        app.tick();
+        assert!(app.take_pending().is_empty(), "pending vote defers polling");
     }
 
     #[test]
