@@ -101,7 +101,13 @@ nixpkgs.overlays = [ inputs.miniqdb.overlays.default ];   # → pkgs.mqdb
 environment.systemPackages = [ inputs.miniqdb.packages.${system}.mqdb ];
 ```
 
-Or without nix: `cargo install --path cli`.
+Or without nix:
+
+```bash
+cargo install --git https://github.com/kiliankoe/miniqdb mqdb
+```
+
+(or `cargo install --path cli` from a checkout).
 
 Log in interactively (OTP by email, same as the website) or with an API token from `scripts/mint-token.ts`:
 
