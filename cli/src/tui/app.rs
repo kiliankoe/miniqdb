@@ -228,10 +228,8 @@ impl App {
                 self.selected = 0;
                 self.request_fetch();
             }
-            KeyCode::Char('j') | KeyCode::Down => {
-                if self.selected + 1 < self.quotes.len() {
-                    self.selected += 1;
-                }
+            KeyCode::Char('j') | KeyCode::Down if self.selected + 1 < self.quotes.len() => {
+                self.selected += 1;
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 self.selected = self.selected.saturating_sub(1);
