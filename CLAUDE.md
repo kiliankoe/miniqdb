@@ -30,6 +30,11 @@ miniqdb is a minimalistic quote database web application for private communities
 ### API Tokens
 - `bun scripts/mint-token.ts <pocketbase-url> <user-email> [duration-days]` - Mint a long-lived impersonation token for scripted quote submission (needs `PB_ADMIN_EMAIL`/`PB_ADMIN_PASSWORD`)
 
+### CLI (cli/)
+- `cargo test` (in `cli/`) - Unit tests + integration tests booting a real PocketBase (shares the `.pb-test/` binary cache with the vitest integration tests)
+- `cargo clippy --all-targets -- -D warnings` / `cargo fmt` - Lint/format (CI enforces both)
+- `nix build .#mqdb` - Build the CLI via the flake (requires `cli/` to be git-tracked and `Cargo.lock` committed)
+
 ## Architecture Overview
 
 ### Tech Stack
@@ -58,6 +63,12 @@ miniqdb is a minimalistic quote database web application for private communities
 - `/pocketbase/` - PocketBase server config
   - `pb_hooks/` - Server-side JS hooks (score denorm, shortId, webhooks, domain validation)
   - `pb_migrations/` - Collection schema migrations
+- `/cli/` - `mqdb`, a Rust CLI/TUI companion (clap + ureq + ratatui)
+  - `src/api.rs` - PocketBase API client mirroring `src/lib/queries.ts` semantics
+  - `src/commands/` - `login` (OTP or `--token`), `list`, `submit`, `search`
+  - `src/tui/` - full-screen TUI (worker thread + pure `App::update` state machine)
+  - `tests/` - integration tests booting a real PocketBase (Rust port of `pb-harness.ts`)
+  - Packaged via the flake as `packages.mqdb` / `overlays.default`
 
 ### Key Architectural Patterns
 - **PocketBase as sole backend**: No custom API server. Frontend calls PocketBase REST API directly.
