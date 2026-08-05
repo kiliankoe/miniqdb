@@ -134,7 +134,10 @@ fn draw_quotes(frame: &mut Frame, app: &App, area: Rect) {
 fn draw_status(frame: &mut Frame, app: &App, area: Rect) {
     let left = match &app.status {
         Some((message, _)) => Line::from(format!(" {message}")).fg(ACCENT),
-        None => Line::from(" j/k move · tab sort · u/d vote · s submit · / search · q quit").dim(),
+        None => {
+            Line::from(" j/k move · tab sort · u/d vote · o open · s submit · / search · q quit")
+                .dim()
+        }
     };
     frame.render_widget(left, area);
 

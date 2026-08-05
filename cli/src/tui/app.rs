@@ -29,6 +29,7 @@ pub enum Overlay {
 
 pub struct App {
     pub email: String,
+    base_url: String,
     pub sort: Sort,
     /// `Some(query)` while showing search results instead of the sorted list.
     pub search: Option<String>,
@@ -48,12 +49,15 @@ pub struct App {
     /// quote id → (previous vote, previous score) for rollback.
     pending_votes: HashMap<String, (i64, i64)>,
     pending: Vec<Request>,
+    /// URL waiting to be opened in the browser (side effect owned by the event loop).
+    pending_open: Option<String>,
 }
 
 impl App {
-    pub fn new(email: String) -> Self {
+    pub fn new(email: String, base_url: String) -> Self {
         let mut app = App {
             email,
+            base_url,
             sort: Sort::Newest,
             search: None,
             overlay: Overlay::None,
@@ -70,6 +74,7 @@ impl App {
             last_fetch: Instant::now(),
             pending_votes: HashMap::new(),
             pending: Vec::new(),
+            pending_open: None,
         };
         app.pending.push(Request::Refresh);
         app.request_fetch();
@@ -78,6 +83,10 @@ impl App {
 
     pub fn take_pending(&mut self) -> Vec<Request> {
         std::mem::take(&mut self.pending)
+    }
+
+    pub fn take_open_url(&mut self) -> Option<String> {
+        self.pending_open.take()
     }
 
     /// Called every event-loop iteration: expires transient status messages
@@ -235,6 +244,7 @@ impl App {
             KeyCode::Char('d') => self.vote_toggle(-1),
             KeyCode::Char('x') => self.vote_set(0),
             KeyCode::Char('r') => self.request_fetch(),
+            KeyCode::Char('o') => self.open_selected(),
             KeyCode::Char('s') => self.overlay = Overlay::Submit(Editor::new()),
             KeyCode::Char('/') => self.overlay = Overlay::SearchInput(String::new()),
             _ => {}
@@ -255,6 +265,17 @@ impl App {
             self.selected = 0;
             self.request_fetch();
         }
+    }
+
+    /// The quote detail page lives at `<base-url>/<shortId>` (same link the
+    /// webhook notifications use).
+    fn open_selected(&mut self) {
+        let Some(quote) = self.quotes.get(self.selected) else {
+            return;
+        };
+        let short_id = quote.quote.short_id;
+        self.pending_open = Some(format!("{}/{short_id}", self.base_url));
+        self.set_status(format!("opening #{short_id} in browser"));
     }
 
     /// Website toggle semantics: pressing the direction you already voted clears.
@@ -368,7 +389,7 @@ mod tests {
     }
 
     fn app_with_quotes(quotes: Vec<QuoteWithVote>) -> App {
-        let mut app = App::new("me@example.com".into());
+        let mut app = App::new("me@example.com".into(), "https://q.example.com".into());
         app.take_pending();
         app.quotes = quotes;
         app.total_pages = 3;
@@ -560,6 +581,21 @@ mod tests {
             app.take_pending().as_slice(),
             [Request::Fetch { .. }]
         ));
+    }
+
+    #[test]
+    fn open_key_yields_the_quote_detail_url() {
+        let mut app = app_with_quotes(vec![quote("q1", 1, 0)]);
+        app.update(key(KeyCode::Char('o')));
+        assert_eq!(
+            app.take_open_url().as_deref(),
+            Some("https://q.example.com/1")
+        );
+        assert!(app.take_open_url().is_none(), "taken only once");
+
+        let mut app = app_with_quotes(vec![]);
+        app.update(key(KeyCode::Char('o')));
+        assert!(app.take_open_url().is_none(), "no selection, no URL");
     }
 
     #[test]

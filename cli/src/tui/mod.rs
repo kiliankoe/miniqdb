@@ -22,7 +22,7 @@ pub fn run() -> Result<()> {
     }
 
     let (tx, rx) = worker::spawn(config.clone());
-    let mut app = App::new(config.email.clone());
+    let mut app = App::new(config.email.clone(), config.url.clone());
 
     // ratatui::init installs a panic hook that restores the terminal.
     let mut terminal = ratatui::init();
@@ -41,6 +41,9 @@ fn event_loop(
     loop {
         for request in app.take_pending() {
             tx.send(request)?;
+        }
+        if let Some(url) = app.take_open_url() {
+            open_in_browser(&url);
         }
         terminal.draw(|frame| ui::draw(frame, app))?;
         if app.should_quit {
@@ -63,4 +66,17 @@ fn event_loop(
         }
         app.tick();
     }
+}
+
+fn open_in_browser(url: &str) {
+    #[cfg(target_os = "macos")]
+    let opener = "open";
+    #[cfg(not(target_os = "macos"))]
+    let opener = "xdg-open";
+    std::process::Command::new(opener)
+        .arg(url)
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()
+        .ok();
 }
