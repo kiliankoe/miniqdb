@@ -146,6 +146,74 @@ fn mismatched_author_is_rejected() {
 }
 
 #[test]
+fn admins_may_edit_and_delete_any_quote() {
+    let pb = TestPb::start();
+    let alice = pb.user_client("alice@example.com");
+    let moderator = pb.admin_client("mod@example.com");
+    assert!(moderator.is_admin().unwrap());
+    assert!(!alice.is_admin().unwrap());
+
+    let quote = alice
+        .submit_quote("quote an admin will edit", "alice@example.com")
+        .unwrap();
+
+    let by_number = moderator
+        .quote_by_short_id(quote.short_id)
+        .unwrap()
+        .expect("quote found by its number");
+    assert_eq!(by_number.id, quote.id);
+
+    let updated = moderator
+        .update_quote(&quote.id, "edited by an admin")
+        .unwrap();
+    assert_eq!(updated.text, "edited by an admin");
+    assert_eq!(updated.author, "alice@example.com", "authorship is kept");
+
+    moderator.delete_quote(&quote.id).unwrap();
+    assert!(
+        moderator
+            .quote_by_short_id(quote.short_id)
+            .unwrap()
+            .is_none()
+    );
+    assert!(
+        alice
+            .my_votes("alice@example.com", &[&quote.id])
+            .unwrap()
+            .is_empty(),
+        "votes are cascade-deleted with the quote"
+    );
+}
+
+#[test]
+fn non_admins_may_only_touch_their_own_quotes() {
+    let pb = TestPb::start();
+    let alice = pb.user_client("alice@example.com");
+    let bob = pb.user_client("bob@example.com");
+
+    let quote = alice
+        .submit_quote("not bobs quote to edit", "alice@example.com")
+        .unwrap();
+
+    // Rules act as filters, so a denied write reads as 404 rather than 403.
+    let err = bob.update_quote(&quote.id, "hijacked").unwrap_err();
+    assert!(
+        matches!(err, ApiError::Api { status: 404, .. }),
+        "got {err:?}"
+    );
+    let err = bob.delete_quote(&quote.id).unwrap_err();
+    assert!(
+        matches!(err, ApiError::Api { status: 404, .. }),
+        "got {err:?}"
+    );
+
+    let mine = alice
+        .update_quote(&quote.id, "alice edits her own")
+        .unwrap();
+    assert_eq!(mine.text, "alice edits her own");
+}
+
+#[test]
 fn invalid_token_is_an_auth_error() {
     let pb = TestPb::start();
 

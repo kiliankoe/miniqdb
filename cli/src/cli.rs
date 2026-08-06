@@ -46,6 +46,24 @@ pub enum Command {
         #[arg(long)]
         json: bool,
     },
+    /// Edit a quote's text (admins can edit any quote, authors their own)
+    Edit {
+        /// Quote number as shown in listings (#42 -> 42)
+        quote: i64,
+        /// Replacement text (read from stdin when omitted)
+        text: Option<String>,
+        /// Output the updated record as JSON
+        #[arg(long)]
+        json: bool,
+    },
+    /// Delete a quote (admins can delete any quote, authors their own)
+    Delete {
+        /// Quote number as shown in listings (#42 -> 42)
+        quote: i64,
+        /// Skip the confirmation prompt
+        #[arg(short, long)]
+        yes: bool,
+    },
     /// Search quotes by text (sorted by score)
     Search {
         query: String,

@@ -123,9 +123,13 @@ mqdb                       # TUI: sorted quote lists, voting, submitting
 mqdb list --sort top       # newest|oldest|top|random, --page/--limit/--json
 mqdb submit "some quote"   # or: fortune | mqdb submit
 mqdb search "some text"    # score-sorted text search
+mqdb edit 42 "fixed typo"  # or pipe the new text in; --json for the record
+mqdb delete 42             # asks first, --yes skips the prompt
 ```
 
-TUI keys: `tab` switch sorting, `j`/`k` move, `h`/`l` pages, `u`/`d` vote, `x` clear vote, `o` open in browser, `s` submit, `/` search, `r` refresh/reshuffle, `q` quit.
+Editing and deleting need admin rights, or authorship of that quote, same as the website.
+
+TUI keys: `[/]` switch sorting, `j`/`k` move, `h`/`l` pages, `u`/`d` vote, `x` clear vote, `enter` open in browser, `s` submit, `/` search, `r` refresh/reshuffle, `q` quit. Admins also get `e` edit and `D` delete.
 
 Development: `cargo test` in `cli/` runs unit tests plus integration tests that boot a real PocketBase (sharing the `.pb-test/` binary cache with the web integration tests).
 

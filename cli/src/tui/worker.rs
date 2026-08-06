@@ -24,7 +24,16 @@ pub enum Request {
     Submit {
         text: String,
     },
+    Update {
+        quote_id: String,
+        text: String,
+    },
+    Delete {
+        quote_id: String,
+        short_id: i64,
+    },
     Refresh,
+    WhoAmI,
 }
 
 #[derive(Debug)]
@@ -46,7 +55,17 @@ pub enum Response {
         result: Result<(), String>,
     },
     Submitted(Result<Quote, String>),
+    Updated {
+        quote_id: String,
+        result: Result<Quote, String>,
+    },
+    Deleted {
+        quote_id: String,
+        short_id: i64,
+        result: Result<(), String>,
+    },
     Refreshed(Option<String>),
+    Admin(bool),
 }
 
 pub fn spawn(config: Config) -> (Sender<Request>, Receiver<Response>) {
@@ -98,11 +117,25 @@ pub fn spawn(config: Config) -> (Sender<Request>, Receiver<Response>) {
                         .submit_quote(&text, &email)
                         .map_err(|e| e.to_string()),
                 ),
+                Request::Update { quote_id, text } => Response::Updated {
+                    result: client
+                        .update_quote(&quote_id, &text)
+                        .map_err(|e| e.to_string()),
+                    quote_id,
+                },
+                Request::Delete { quote_id, short_id } => Response::Deleted {
+                    result: client.delete_quote(&quote_id).map_err(|e| e.to_string()),
+                    quote_id,
+                    short_id,
+                },
                 // Slides the 180-day window; fails harmlessly for impersonation
                 // tokens, which cannot be refreshed.
                 Request::Refresh => {
                     Response::Refreshed(client.auth_refresh().ok().map(|a| a.token))
                 }
+                // Decides whether the edit/delete keys are offered, same as the
+                // website's isAdmin check. Failure means "not an admin".
+                Request::WhoAmI => Response::Admin(client.is_admin().unwrap_or(false)),
             };
             if res_tx.send(response).is_err() {
                 break; // UI is gone

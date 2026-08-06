@@ -275,6 +275,15 @@ impl Client {
         from_value(self.get(&format!("/api/collections/users/records/{id}"), &[])?)
     }
 
+    /// Mirrors fetchIsAdmin in src/lib/queries.ts: read the live user record so
+    /// an ADMIN_EMAILS promotion applies without logging in again.
+    pub fn is_admin(&self) -> Result<bool, ApiError> {
+        let Some(id) = self.token.as_deref().and_then(jwt_record_id) else {
+            return Ok(false);
+        };
+        Ok(self.get_user(&id)?.is_admin)
+    }
+
     // --- quotes ---
 
     pub fn list_quotes(
@@ -314,6 +323,31 @@ impl Client {
             "/api/collections/quotes/records",
             &json!({ "text": text, "author": author }),
         )?)
+    }
+
+    /// Quotes are addressed by `#shortId` everywhere the user sees them, but
+    /// the write endpoints need the record id.
+    pub fn quote_by_short_id(&self, short_id: i64) -> Result<Option<Quote>, ApiError> {
+        let filter = format!("shortId = {short_id}");
+        let page: Page<Quote> = from_value(self.get(
+            "/api/collections/quotes/records",
+            &[("perPage", "1"), ("filter", &filter)],
+        )?)?;
+        Ok(page.items.into_iter().next())
+    }
+
+    /// Admins may edit any quote, authors their own (the quotes updateRule)
+    pub fn update_quote(&self, id: &str, text: &str) -> Result<Quote, ApiError> {
+        from_value(self.send(
+            "PATCH",
+            &format!("/api/collections/quotes/records/{id}"),
+            &json!({ "text": text }),
+        )?)
+    }
+
+    /// Same rights as editing. The quote's votes are cascade-deleted with it.
+    pub fn delete_quote(&self, id: &str) -> Result<(), ApiError> {
+        self.delete(&format!("/api/collections/quotes/records/{id}"))
     }
 
     // --- votes ---
