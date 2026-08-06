@@ -28,6 +28,14 @@ impl Editor {
         }
     }
 
+    /// Seed the editor with existing text, cursor at the end.
+    pub fn from_text(text: &str) -> Self {
+        let lines: Vec<String> = text.split('\n').map(String::from).collect();
+        let row = lines.len() - 1;
+        let col = char_len(&lines[row]);
+        Editor { lines, row, col }
+    }
+
     pub fn text(&self) -> String {
         self.lines.join("\n")
     }
@@ -114,6 +122,17 @@ mod tests {
         let e = editor_with("hello\nworld");
         assert_eq!(e.text(), "hello\nworld");
         assert_eq!((e.row, e.col), (1, 5));
+    }
+
+    #[test]
+    fn from_text_seeds_the_buffer_with_the_cursor_at_the_end() {
+        let e = Editor::from_text("ab\ncd");
+        assert_eq!(e.text(), "ab\ncd");
+        assert_eq!((e.row, e.col), (1, 2));
+
+        let e = Editor::from_text("");
+        assert_eq!(e.text(), "");
+        assert_eq!((e.row, e.col), (0, 0));
     }
 
     #[test]

@@ -27,7 +27,18 @@ pub fn draw(frame: &mut Frame, app: &App) {
 
     match &app.overlay {
         Overlay::None => {}
-        Overlay::Submit(editor) => draw_submit(frame, editor),
+        Overlay::Submit(editor) => {
+            draw_editor(frame, editor, " new quote ", " ctrl-s submit · esc cancel ")
+        }
+        Overlay::Edit {
+            short_id, editor, ..
+        } => draw_editor(
+            frame,
+            editor,
+            &format!(" edit #{short_id} "),
+            " ctrl-s save · esc cancel ",
+        ),
+        Overlay::ConfirmDelete { short_id, .. } => draw_confirm_delete(frame, *short_id),
         Overlay::SearchInput(query) => draw_search_input(frame, query),
     }
 }
@@ -135,8 +146,14 @@ fn draw_status(frame: &mut Frame, app: &App, area: Rect) {
     let left = match &app.status {
         Some((message, _)) => Line::from(format!(" {message}")).fg(ACCENT),
         None => {
-            Line::from(" j/k move · h/l page · [/] sort · u/d vote · enter open · s submit · / search · q quit")
-                .dim()
+            let mut hint = String::from(
+                " j/k move · h/l page · [/] sort · u/d vote · enter open · s submit · / search",
+            );
+            if app.is_admin {
+                hint.push_str(" · e edit · D delete");
+            }
+            hint.push_str(" · q quit");
+            Line::from(hint).dim()
         }
     };
     frame.render_widget(left, area);
@@ -155,12 +172,12 @@ fn draw_status(frame: &mut Frame, app: &App, area: Rect) {
     }
 }
 
-fn draw_submit(frame: &mut Frame, editor: &crate::tui::editor::Editor) {
+fn draw_editor(frame: &mut Frame, editor: &crate::tui::editor::Editor, title: &str, hint: &str) {
     let area = centered(frame.area(), 70, 40);
     frame.render_widget(Clear, area);
     let block = Block::bordered()
-        .title(" new quote ")
-        .title_bottom(Line::from(" ctrl-s submit · esc cancel ").right_aligned())
+        .title(title)
+        .title_bottom(Line::from(hint).right_aligned())
         .border_style(Style::new().fg(ACCENT));
     let inner = block.inner(area);
     frame.render_widget(block, area);
@@ -169,6 +186,20 @@ fn draw_submit(frame: &mut Frame, editor: &crate::tui::editor::Editor) {
         inner.x + editor.col.min(inner.width.saturating_sub(1) as usize) as u16,
         inner.y + editor.row.min(inner.height.saturating_sub(1) as usize) as u16,
     ));
+}
+
+fn draw_confirm_delete(frame: &mut Frame, short_id: i64) {
+    let area = centered(frame.area(), 60, 0);
+    frame.render_widget(Clear, area);
+    let block = Block::bordered()
+        .title(" delete quote ")
+        .border_style(Style::new().fg(ACCENT));
+    let inner = block.inner(area);
+    frame.render_widget(block, area);
+    frame.render_widget(
+        Paragraph::new(format!("Delete #{short_id}? This cannot be undone. [y/N]")).centered(),
+        inner,
+    );
 }
 
 fn draw_search_input(frame: &mut Frame, query: &str) {

@@ -24,6 +24,15 @@ pub enum Msg {
 pub enum Overlay {
     None,
     Submit(Editor),
+    Edit {
+        quote_id: String,
+        short_id: i64,
+        editor: Editor,
+    },
+    ConfirmDelete {
+        quote_id: String,
+        short_id: i64,
+    },
     SearchInput(String),
 }
 
@@ -41,6 +50,10 @@ pub struct App {
     pub total_items: i64,
     pub loading: bool,
     pub submitting: bool,
+    pub saving: bool,
+    /// Whether to offer the edit/delete keys, mirroring the website's isAdmin
+    /// gate. Answered by the worker shortly after startup.
+    pub is_admin: bool,
     pub status: Option<(String, Instant)>,
     pub should_quit: bool,
     seq: u64,
@@ -68,6 +81,8 @@ impl App {
             total_items: 0,
             loading: false,
             submitting: false,
+            saving: false,
+            is_admin: false,
             status: None,
             should_quit: false,
             seq: 0,
@@ -77,6 +92,7 @@ impl App {
             pending_open: None,
         };
         app.pending.push(Request::Refresh);
+        app.pending.push(Request::WhoAmI);
         app.request_fetch();
         app
     }
@@ -149,6 +165,8 @@ impl App {
         }
         match &mut self.overlay {
             Overlay::Submit(_) => self.on_submit_key(key),
+            Overlay::Edit { .. } => self.on_edit_key(key),
+            Overlay::ConfirmDelete { .. } => self.on_confirm_delete_key(key),
             Overlay::SearchInput(_) => self.on_search_input_key(key),
             Overlay::None => self.on_list_key(key),
         }
@@ -173,14 +191,50 @@ impl App {
                 self.pending.push(Request::Submit { text });
                 self.set_status("submitting…");
             }
-            (KeyCode::Enter, _) => editor.newline(),
-            (KeyCode::Backspace, _) => editor.backspace(),
-            (KeyCode::Left, _) => editor.move_left(),
-            (KeyCode::Right, _) => editor.move_right(),
-            (KeyCode::Up, _) => editor.move_up(),
-            (KeyCode::Down, _) => editor.move_down(),
-            (KeyCode::Char(c), m) if !m.contains(KeyModifiers::CONTROL) => editor.insert_char(c),
-            _ => {}
+            _ => apply_editor_key(editor, key),
+        }
+    }
+
+    fn on_edit_key(&mut self, key: KeyEvent) {
+        let Overlay::Edit {
+            quote_id, editor, ..
+        } = &mut self.overlay
+        else {
+            return;
+        };
+        match (key.code, key.modifiers) {
+            (KeyCode::Esc, _) => self.overlay = Overlay::None,
+            (KeyCode::Char('s'), m) if m.contains(KeyModifiers::CONTROL) => {
+                if self.saving {
+                    return;
+                }
+                let text = editor.text().trim().to_string();
+                let quote_id = quote_id.clone();
+                if text.chars().count() < 5 {
+                    self.set_status("quote must be at least 5 characters");
+                    return;
+                }
+                self.saving = true;
+                self.pending.push(Request::Update { quote_id, text });
+                self.set_status("saving…");
+            }
+            _ => apply_editor_key(editor, key),
+        }
+    }
+
+    fn on_confirm_delete_key(&mut self, key: KeyEvent) {
+        let Overlay::ConfirmDelete { quote_id, short_id } = &self.overlay else {
+            return;
+        };
+        match key.code {
+            KeyCode::Char('y') | KeyCode::Char('Y') => {
+                let (quote_id, short_id) = (quote_id.clone(), *short_id);
+                self.overlay = Overlay::None;
+                self.pending.push(Request::Delete { quote_id, short_id });
+                self.set_status(format!("deleting #{short_id}…"));
+            }
+            // Anything else cancels – the safe answer to a destructive prompt.
+            _ => self.overlay = Overlay::None,
         }
     }
 
@@ -244,6 +298,8 @@ impl App {
             KeyCode::Char('r') => self.request_fetch(),
             KeyCode::Enter => self.open_selected(),
             KeyCode::Char('s') => self.overlay = Overlay::Submit(Editor::new()),
+            KeyCode::Char('e') if self.is_admin => self.start_edit(),
+            KeyCode::Char('D') if self.is_admin => self.start_delete(),
             KeyCode::Char('/') => self.overlay = Overlay::SearchInput(String::new()),
             _ => {}
         }
@@ -274,6 +330,28 @@ impl App {
         let short_id = quote.quote.short_id;
         self.pending_open = Some(format!("{}/{short_id}", self.base_url));
         self.set_status(format!("opening #{short_id} in browser"));
+    }
+
+    /// Editing and deleting are the website's admin-only quote actions.
+    fn start_edit(&mut self) {
+        let Some(quote) = self.quotes.get(self.selected) else {
+            return;
+        };
+        self.overlay = Overlay::Edit {
+            quote_id: quote.quote.id.clone(),
+            short_id: quote.quote.short_id,
+            editor: Editor::from_text(&quote.quote.text),
+        };
+    }
+
+    fn start_delete(&mut self) {
+        let Some(quote) = self.quotes.get(self.selected) else {
+            return;
+        };
+        self.overlay = Overlay::ConfirmDelete {
+            quote_id: quote.quote.id.clone(),
+            short_id: quote.quote.short_id,
+        };
     }
 
     /// Website toggle semantics: pressing the direction you already voted clears.
@@ -351,9 +429,56 @@ impl App {
                     Err(err) => self.set_status(format!("submit failed: {err}")),
                 }
             }
+            Response::Updated { quote_id, result } => {
+                self.saving = false;
+                match result {
+                    Ok(updated) => {
+                        let short_id = updated.short_id;
+                        if let Some(quote) = self.quotes.iter_mut().find(|q| q.quote.id == quote_id)
+                        {
+                            // Only the text changed; keeping the local score preserves an
+                            // optimistic vote the response predates.
+                            quote.quote.text = updated.text;
+                        }
+                        self.overlay = Overlay::None;
+                        self.set_status(format!("Updated #{short_id}"));
+                    }
+                    Err(err) => self.set_status(format!("edit failed: {err}")),
+                }
+            }
+            Response::Deleted {
+                quote_id,
+                short_id,
+                result,
+            } => match result {
+                Ok(()) => {
+                    // Drop it locally rather than refetching, a refetch would reshuffle #random
+                    // and fight an in-flight optimistic vote.
+                    self.quotes.retain(|q| q.quote.id != quote_id);
+                    self.selected = self.selected.min(self.quotes.len().saturating_sub(1));
+                    self.total_items = (self.total_items - 1).max(0);
+                    self.set_status(format!("Deleted #{short_id}"));
+                }
+                Err(err) => self.set_status(format!("delete failed: {err}")),
+            },
             // Persisting the refreshed token is handled by the event loop.
             Response::Refreshed(_) => {}
+            Response::Admin(is_admin) => self.is_admin = is_admin,
         }
+    }
+}
+
+/// Text-entry keys shared by the submit and edit overlays.
+fn apply_editor_key(editor: &mut Editor, key: KeyEvent) {
+    match (key.code, key.modifiers) {
+        (KeyCode::Enter, _) => editor.newline(),
+        (KeyCode::Backspace, _) => editor.backspace(),
+        (KeyCode::Left, _) => editor.move_left(),
+        (KeyCode::Right, _) => editor.move_right(),
+        (KeyCode::Up, _) => editor.move_up(),
+        (KeyCode::Down, _) => editor.move_down(),
+        (KeyCode::Char(c), m) if !m.contains(KeyModifiers::CONTROL) => editor.insert_char(c),
+        _ => {}
     }
 }
 
@@ -557,6 +682,86 @@ mod tests {
         assert!(!app.submitting);
         assert!(app.take_pending().is_empty());
         assert!(matches!(app.overlay, Overlay::Submit(_)));
+    }
+
+    #[test]
+    fn editing_is_admin_only_and_saves_the_new_text() {
+        let mut app = app_with_quotes(vec![quote("q1", 3, 1)]);
+        app.update(key(KeyCode::Char('e')));
+        assert!(
+            matches!(app.overlay, Overlay::None),
+            "non-admins get no editor"
+        );
+
+        app.is_admin = true;
+        app.update(key(KeyCode::Char('e')));
+        let Overlay::Edit { editor, .. } = &app.overlay else {
+            panic!("expected the edit overlay");
+        };
+        assert_eq!(editor.text(), "text of q1", "seeded with the current text");
+
+        app.update(key(KeyCode::Char('!')));
+        app.update(ctrl('s'));
+        assert!(app.saving);
+        assert!(matches!(
+            app.take_pending().as_slice(),
+            [Request::Update { quote_id, text }] if quote_id == "q1" && text == "text of q1!"
+        ));
+
+        app.update(Msg::Worker(Response::Updated {
+            quote_id: "q1".into(),
+            result: Ok(Quote {
+                text: "text of q1!".into(),
+                score: 99, // a stale score must not clobber the local one
+                ..quote("q1", 3, 1).quote
+            }),
+        }));
+        assert!(matches!(app.overlay, Overlay::None));
+        assert!(!app.saving);
+        assert_eq!(app.quotes[0].quote.text, "text of q1!");
+        assert_eq!(app.quotes[0].quote.score, 3);
+    }
+
+    #[test]
+    fn deleting_is_admin_only_and_needs_confirmation() {
+        let mut app = app_with_quotes(vec![quote("q1", 1, 0), quote("q2", 1, 0)]);
+        app.update(key(KeyCode::Char('D')));
+        assert!(
+            matches!(app.overlay, Overlay::None),
+            "non-admins cannot delete"
+        );
+
+        app.is_admin = true;
+        app.update(key(KeyCode::Char('D')));
+        app.update(key(KeyCode::Char('n')));
+        assert!(matches!(app.overlay, Overlay::None));
+        assert!(app.take_pending().is_empty(), "declining deletes nothing");
+
+        app.update(key(KeyCode::Char('D')));
+        app.update(key(KeyCode::Char('y')));
+        assert!(matches!(
+            app.take_pending().as_slice(),
+            [Request::Delete { quote_id, .. }] if quote_id == "q1"
+        ));
+
+        app.update(Msg::Worker(Response::Deleted {
+            quote_id: "q1".into(),
+            short_id: 1,
+            result: Ok(()),
+        }));
+        assert_eq!(app.quotes.len(), 1);
+        assert_eq!(app.quotes[0].quote.id, "q2");
+        assert_eq!(app.selected, 0);
+        assert_eq!(app.total_items, 24);
+    }
+
+    #[test]
+    fn admin_keys_do_not_shadow_voting() {
+        let mut app = app_with_quotes(vec![quote("q1", 3, 0)]);
+        app.is_admin = true;
+        app.update(key(KeyCode::Char('d')));
+        assert_eq!(app.quotes[0].vote, -1);
+        assert!(matches!(app.overlay, Overlay::None));
     }
 
     #[test]

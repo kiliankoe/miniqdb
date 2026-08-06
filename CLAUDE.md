@@ -65,7 +65,7 @@ miniqdb is a minimalistic quote database web application for private communities
   - `pb_migrations/` - Collection schema migrations
 - `/cli/` - `mqdb`, a Rust CLI/TUI companion (clap + ureq + ratatui)
   - `src/api.rs` - PocketBase API client mirroring `src/lib/queries.ts` semantics
-  - `src/commands/` - `login` (OTP or `--token`), `list`, `submit`, `search`
+  - `src/commands/` - `login` (OTP or `--token`), `list`, `submit`, `search`, `edit`, `delete`
   - `src/tui/` - full-screen TUI (worker thread + pure `App::update` state machine)
   - `tests/` - integration tests booting a real PocketBase (Rust port of `pb-harness.ts`)
   - Packaged via the flake as `packages.mqdb` / `overlays.default`

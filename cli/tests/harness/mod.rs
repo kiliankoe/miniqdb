@@ -142,12 +142,22 @@ impl TestPb {
     /// Create a user and return an API client authenticated as them via an
     /// impersonation token (same mechanism as scripts/mint-token.ts).
     pub fn user_client(&self, email: &str) -> mqdb::api::Client {
+        self.client_for(email, false)
+    }
+
+    /// Same, but flagged isAdmin – the flag the edit/delete rules key off.
+    pub fn admin_client(&self, email: &str) -> mqdb::api::Client {
+        self.client_for(email, true)
+    }
+
+    fn client_for(&self, email: &str, is_admin: bool) -> mqdb::api::Client {
         let user: Value = ureq::post(format!("{}/api/collections/users/records", self.url))
             .header("Authorization", &self.admin_token)
             .send_json(json!({
                 "email": email,
                 "password": "password12345",
                 "passwordConfirm": "password12345",
+                "isAdmin": is_admin,
             }))
             .expect("create user")
             .body_mut()
