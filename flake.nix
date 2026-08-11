@@ -14,7 +14,7 @@
         pkgs:
         pkgs.rustPlatform.buildRustPackage {
           pname = "mqdb";
-          version = "0.1.0";
+          version = (fromTOML (builtins.readFile ./cli/Cargo.toml)).package.version;
           src = ./cli;
           cargoLock.lockFile = ./cli/Cargo.lock;
           # The crate's integration tests boot a real PocketBase (downloaded
