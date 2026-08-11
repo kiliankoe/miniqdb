@@ -9,9 +9,12 @@ use ratatui::widgets::{Block, Clear, Paragraph};
 use crate::api::Sort;
 use crate::output::format_date;
 use crate::tui::app::{App, Overlay};
+use crate::tui::editor::Editor;
 
 const ACCENT: Color = Color::Yellow;
 const DOWN: Color = Color::Blue;
+const WRAP_MARKER: &str = "↪ ";
+const GUTTER: usize = 2;
 
 pub fn draw(frame: &mut Frame, app: &App) {
     let [header, body, status] = Layout::vertical([
@@ -172,7 +175,7 @@ fn draw_status(frame: &mut Frame, app: &App, area: Rect) {
     }
 }
 
-fn draw_editor(frame: &mut Frame, editor: &crate::tui::editor::Editor, title: &str, hint: &str) {
+fn draw_editor(frame: &mut Frame, editor: &Editor, title: &str, hint: &str) {
     let area = centered(frame.area(), 70, 40);
     frame.render_widget(Clear, area);
     let block = Block::bordered()
@@ -181,10 +184,31 @@ fn draw_editor(frame: &mut Frame, editor: &crate::tui::editor::Editor, title: &s
         .border_style(Style::new().fg(ACCENT));
     let inner = block.inner(area);
     frame.render_widget(block, area);
-    frame.render_widget(Paragraph::new(editor.text()), inner);
+
+    // Gutter on the left for the wrap marker, one column on the right so the
+    // cursor has somewhere to sit at the end of a full row.
+    let width = (inner.width as usize).saturating_sub(GUTTER + 1).max(1);
+    let (rows, (cursor_row, cursor_col)) = layout_editor(editor, width);
+
+    let lines: Vec<Line> = rows
+        .into_iter()
+        .map(|(text, wrapped)| {
+            let gutter = if wrapped {
+                Span::styled(WRAP_MARKER, Style::new().fg(ACCENT).dim())
+            } else {
+                Span::raw("  ")
+            };
+            Line::from(vec![gutter, Span::raw(text)])
+        })
+        .collect();
+
+    // Wrapping trades running off the right edge for running off the bottom,
+    // so scroll to keep the cursor row in view.
+    let offset = cursor_row.saturating_sub(inner.height.saturating_sub(1) as usize);
+    frame.render_widget(Paragraph::new(lines).scroll((offset as u16, 0)), inner);
     frame.set_cursor_position((
-        inner.x + editor.col.min(inner.width.saturating_sub(1) as usize) as u16,
-        inner.y + editor.row.min(inner.height.saturating_sub(1) as usize) as u16,
+        inner.x + (GUTTER + cursor_col) as u16,
+        inner.y + (cursor_row - offset) as u16,
     ));
 }
 
@@ -230,40 +254,67 @@ fn centered(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
     }
 }
 
-/// Greedy word wrap; long words hard-break. Char-count based (close enough
-/// for terminal width in practice).
-fn wrap(text: &str, width: usize) -> Vec<String> {
-    let mut out = Vec::new();
-    for raw in text.lines() {
-        if raw.chars().count() <= width {
-            out.push(raw.to_string());
-            continue;
-        }
-        let mut current = String::new();
-        for word in raw.split_whitespace() {
-            let word_len = word.chars().count();
-            let current_len = current.chars().count();
-            if !current.is_empty() && current_len + 1 + word_len > width {
-                out.push(std::mem::take(&mut current));
+/// One visual row of a wrapped editor buffer: display text, plus whether it is a
+/// soft-wrap continuation of the row above rather than its own logical line.
+type EditorRow = (String, bool);
+
+/// Lay the editor buffer out into visual rows of at most `width` chars, and map the
+/// cursor onto them. Wrapping is purely visual, the buffer keeps only the newlines
+/// the user actually typed.
+fn layout_editor(editor: &Editor, width: usize) -> (Vec<EditorRow>, (usize, usize)) {
+    let mut rows = Vec::new();
+    let mut cursor = (0, 0);
+
+    for (row, line) in editor.lines.iter().enumerate() {
+        for (i, (start, text)) in wrap_line(line, width).into_iter().enumerate() {
+            // Segments are ordered and partition the line, so the last one
+            // starting at or before the cursor is the one holding it.
+            if row == editor.row && editor.col >= start {
+                cursor = (rows.len(), (editor.col - start).min(width));
             }
-            if word_len > width {
-                for c in word.chars() {
-                    if current.chars().count() == width {
-                        out.push(std::mem::take(&mut current));
-                    }
-                    current.push(c);
-                }
-            } else {
-                if !current.is_empty() {
-                    current.push(' ');
-                }
-                current.push_str(word);
-            }
-        }
-        if !current.is_empty() {
-            out.push(current);
+            rows.push((text, i > 0));
         }
     }
+
+    (rows, cursor)
+}
+
+/// Soft-wrap one logical line into `(start char offset, display text)` segments.
+/// Segments partition the line: whitespace at a break belongs to the segment before
+/// it and is trimmed from the display, so every cursor offset maps to exactly one
+/// segment. Long words hard-break.
+fn wrap_line(line: &str, width: usize) -> Vec<(usize, String)> {
+    let width = width.max(1);
+    let chars: Vec<char> = line.chars().collect();
+    let mut out = Vec::new();
+    let mut start = 0;
+
+    while chars.len() - start > width {
+        // Break after the last space that still fits, else mid-word.
+        let limit = start + width;
+        let brk = chars[start..=limit]
+            .iter()
+            .rposition(|c| c.is_whitespace())
+            .map_or(limit, |i| start + i);
+        out.push((start, chars[start..brk].iter().collect()));
+
+        // The whitespace run at the break stays inside the segment we just pushed,
+        // so its offsets don't fall into a gap between segments.
+        start = brk;
+        while start < chars.len() && chars[start].is_whitespace() {
+            start += 1;
+        }
+    }
+    out.push((start, chars[start..].iter().collect()));
+    out
+}
+
+/// Greedy word wrap for display, dropping the offsets `wrap_line` tracks.
+fn wrap(text: &str, width: usize) -> Vec<String> {
+    let mut out: Vec<String> = text
+        .lines()
+        .flat_map(|line| wrap_line(line, width).into_iter().map(|(_, text)| text))
+        .collect();
     if out.is_empty() {
         out.push(String::new());
     }
@@ -272,7 +323,8 @@ fn wrap(text: &str, width: usize) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::wrap;
+    use super::{layout_editor, wrap, wrap_line};
+    use crate::tui::editor::Editor;
 
     #[test]
     fn wrap_preserves_short_lines_and_breaks_long_ones() {
@@ -280,5 +332,56 @@ mod tests {
         assert_eq!(wrap("one two three", 7), vec!["one two", "three"]);
         assert_eq!(wrap("abcdefghij", 4), vec!["abcd", "efgh", "ij"]);
         assert_eq!(wrap("", 10), vec![""]);
+    }
+
+    #[test]
+    fn wrap_line_reports_the_char_offset_each_segment_starts_at() {
+        assert_eq!(
+            wrap_line("one two three", 7),
+            vec![(0, "one two".to_string()), (8, "three".to_string())]
+        );
+        assert_eq!(
+            wrap_line("abcdefghij", 4),
+            vec![
+                (0, "abcd".to_string()),
+                (4, "efgh".to_string()),
+                (8, "ij".to_string())
+            ]
+        );
+        assert_eq!(wrap_line("short", 10), vec![(0, "short".to_string())]);
+        assert_eq!(wrap_line("", 10), vec![(0, String::new())]);
+    }
+
+    #[test]
+    fn layout_editor_wraps_long_lines_and_marks_the_continuation() {
+        let (rows, cursor) = layout_editor(&Editor::from_text("one two three"), 7);
+        assert_eq!(
+            rows,
+            vec![("one two".to_string(), false), ("three".to_string(), true)]
+        );
+        assert_eq!(
+            cursor,
+            (1, 5),
+            "cursor follows the text onto the wrapped row"
+        );
+    }
+
+    #[test]
+    fn layout_editor_maps_the_cursor_across_a_break() {
+        let mut e = Editor::from_text("one two three");
+        e.col = 7; // the space ending the first visual row
+        assert_eq!(layout_editor(&e, 7).1, (0, 7));
+        e.col = 8; // first char of "three"
+        assert_eq!(layout_editor(&e, 7).1, (1, 0));
+    }
+
+    #[test]
+    fn layout_editor_keeps_typed_newlines_separate_from_wraps() {
+        let (rows, cursor) = layout_editor(&Editor::from_text("ab\ncd"), 7);
+        assert_eq!(
+            rows,
+            vec![("ab".to_string(), false), ("cd".to_string(), false)]
+        );
+        assert_eq!(cursor, (1, 2));
     }
 }
