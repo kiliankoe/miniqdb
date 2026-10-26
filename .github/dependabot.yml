@@ -1,0 +1,33 @@
+# Minor and patch bumps are grouped into one PR per ecosystem; majors get
+# their own PRs since they tend to need code changes. The PocketBase version
+# is pinned by hand (Dockerfile ARG and both test harnesses) and isn't tracked.
+version: 2
+updates:
+  - package-ecosystem: bun
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      bun:
+        update-types: [minor, patch]
+
+  - package-ecosystem: cargo
+    directory: /cli
+    schedule:
+      interval: weekly
+    groups:
+      cargo:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        update-types: [minor, patch]
+
+  - package-ecosystem: nix
+    directory: /
+    schedule:
+      interval: weekly
