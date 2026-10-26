@@ -25,7 +25,7 @@ jobs:
       - uses: actions/cache@v6
         with:
           path: .pb-test
-          key: pb-test-0.40.6
+          key: pb-test-${{ hashFiles('cli/tests/harness/mod.rs') }}
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test

@@ -1,0 +1,24 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["cli/**", ".github/workflows/ci-rust.yml"]
+  pull_request:
+    paths-ignore: ["cli/**", ".github/workflows/ci-rust.yml"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+      # Integration tests boot a real PocketBase; cache the pinned binary.
+      - uses: actions/cache@v6
+        with:
+          path: .pb-test
+          key: pb-test-${{ hashFiles('test/integration/pb-harness.ts') }}
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run build
+      - run: bun run test:all
