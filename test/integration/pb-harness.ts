@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 import PocketBase from "pocketbase";
 
 // Pin to the same version the production Dockerfile builds against.
-const PB_VERSION = "0.36.2";
+const PB_VERSION = "0.40.6";
 const SUPERUSER_EMAIL = "admin@test.local";
 const SUPERUSER_PASSWORD = "test-password-123";
 

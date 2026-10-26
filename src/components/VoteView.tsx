@@ -29,8 +29,7 @@ export function VoteView({
     <Stack
       direction="row"
       spacing={1}
-      alignItems="center"
-      justifyContent="center"
+      sx={{ alignItems: "center", justifyContent: "center" }}
     >
       <IconButton
         onClick={() => handleVote(vote === 1 ? 0 : 1)}

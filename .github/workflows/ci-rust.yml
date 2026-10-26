@@ -14,7 +14,7 @@ jobs:
       run:
         working-directory: cli
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
@@ -22,10 +22,10 @@ jobs:
         with:
           workspaces: cli
       # Integration tests boot a real PocketBase; cache the pinned binary.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: .pb-test
-          key: pb-test-0.36.2
+          key: pb-test-0.40.6
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test

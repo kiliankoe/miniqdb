@@ -9,23 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as LoginNothingToSeeHereRouteImport } from './routes/login/nothing-to-see-here'
-import { Route as LoginErrorRouteImport } from './routes/login/error'
-import { Route as AuthenticatedSubmitRouteImport } from './routes/_authenticated/submit'
-import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedQuoteIdRouteImport } from './routes/_authenticated/$quoteId'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
+import { Route as AuthenticatedSubmitRouteImport } from './routes/_authenticated/submit'
+import { Route as LoginErrorRouteImport } from './routes/login/error'
+import { Route as LoginNothingToSeeHereRouteImport } from './routes/login/nothing-to-see-here'
 
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -33,24 +33,9 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const LoginNothingToSeeHereRoute = LoginNothingToSeeHereRouteImport.update({
-  id: '/nothing-to-see-here',
-  path: '/nothing-to-see-here',
-  getParentRoute: () => LoginRoute,
-} as any)
-const LoginErrorRoute = LoginErrorRouteImport.update({
-  id: '/error',
-  path: '/error',
-  getParentRoute: () => LoginRoute,
-} as any)
-const AuthenticatedSubmitRoute = AuthenticatedSubmitRouteImport.update({
-  id: '/submit',
-  path: '/submit',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
-  id: '/search',
-  path: '/search',
+const AuthenticatedQuoteIdRoute = AuthenticatedQuoteIdRouteImport.update({
+  id: '/$quoteId',
+  path: '/$quoteId',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -58,10 +43,25 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedQuoteIdRoute = AuthenticatedQuoteIdRouteImport.update({
-  id: '/$quoteId',
-  path: '/$quoteId',
+const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedSubmitRoute = AuthenticatedSubmitRouteImport.update({
+  id: '/submit',
+  path: '/submit',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const LoginErrorRoute = LoginErrorRouteImport.update({
+  id: '/error',
+  path: '/error',
+  getParentRoute: () => LoginRoute,
+} as any)
+const LoginNothingToSeeHereRoute = LoginNothingToSeeHereRouteImport.update({
+  id: '/nothing-to-see-here',
+  path: '/nothing-to-see-here',
+  getParentRoute: () => LoginRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -137,18 +137,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -158,32 +158,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/login/nothing-to-see-here': {
-      id: '/login/nothing-to-see-here'
-      path: '/nothing-to-see-here'
-      fullPath: '/login/nothing-to-see-here'
-      preLoaderRoute: typeof LoginNothingToSeeHereRouteImport
-      parentRoute: typeof LoginRoute
-    }
-    '/login/error': {
-      id: '/login/error'
-      path: '/error'
-      fullPath: '/login/error'
-      preLoaderRoute: typeof LoginErrorRouteImport
-      parentRoute: typeof LoginRoute
-    }
-    '/_authenticated/submit': {
-      id: '/_authenticated/submit'
-      path: '/submit'
-      fullPath: '/submit'
-      preLoaderRoute: typeof AuthenticatedSubmitRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/search': {
-      id: '/_authenticated/search'
-      path: '/search'
-      fullPath: '/search'
-      preLoaderRoute: typeof AuthenticatedSearchRouteImport
+    '/_authenticated/$quoteId': {
+      id: '/_authenticated/$quoteId'
+      path: '/$quoteId'
+      fullPath: '/$quoteId'
+      preLoaderRoute: typeof AuthenticatedQuoteIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin': {
@@ -193,12 +172,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/$quoteId': {
-      id: '/_authenticated/$quoteId'
-      path: '/$quoteId'
-      fullPath: '/$quoteId'
-      preLoaderRoute: typeof AuthenticatedQuoteIdRouteImport
+    '/_authenticated/search': {
+      id: '/_authenticated/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AuthenticatedSearchRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/submit': {
+      id: '/_authenticated/submit'
+      path: '/submit'
+      fullPath: '/submit'
+      preLoaderRoute: typeof AuthenticatedSubmitRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/login/error': {
+      id: '/login/error'
+      path: '/error'
+      fullPath: '/login/error'
+      preLoaderRoute: typeof LoginErrorRouteImport
+      parentRoute: typeof LoginRoute
+    }
+    '/login/nothing-to-see-here': {
+      id: '/login/nothing-to-see-here'
+      path: '/nothing-to-see-here'
+      fullPath: '/login/nothing-to-see-here'
+      preLoaderRoute: typeof LoginNothingToSeeHereRouteImport
+      parentRoute: typeof LoginRoute
     }
   }
 }

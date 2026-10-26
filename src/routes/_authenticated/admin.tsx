@@ -93,7 +93,7 @@ function AdminPage() {
           Configure webhooks that will be triggered when new quotes are added.
         </Typography>
 
-        <Stack direction="row" spacing={1} alignItems="flex-start">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
           <TextField
             fullWidth
             placeholder="https://example.com/webhook"
@@ -143,9 +143,9 @@ function AdminPage() {
               <Stack
                 key={webhook.id}
                 direction="row"
-                alignItems="center"
                 spacing={1}
                 sx={{
+                  alignItems: "center",
                   p: 1,
                   borderRadius: 1,
                   "&:hover": {

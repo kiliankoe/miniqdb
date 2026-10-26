@@ -79,13 +79,15 @@ export function QuoteView({
     <Stack
       direction="column"
       spacing={0}
-      maxWidth={{
-        xs: "100%",
-        sm: "90%",
-        md: "80%",
+      sx={{
+        maxWidth: {
+          xs: "100%",
+          sm: "90%",
+          md: "80%",
+        },
       }}
     >
-      <Stack direction="row" spacing={1} alignItems="center">
+      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
         <Link to="/$quoteId" params={{ quoteId: String(quote.shortId) }}>
           <Typography
             variant="body2"

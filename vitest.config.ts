@@ -13,7 +13,7 @@ export default defineConfig({
         resolve: { alias: srcAlias },
         test: {
           name: "unit",
-          environment: "jsdom",
+          environment: "node",
           globals: true,
           include: ["test/unit/**/*.test.ts"],
         },

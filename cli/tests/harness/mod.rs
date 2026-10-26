@@ -11,7 +11,7 @@ use std::time::{Duration, Instant};
 use serde_json::{Value, json};
 
 // Keep in sync with pocketbase/Dockerfile and test/integration/pb-harness.ts.
-const PB_VERSION: &str = "0.36.2";
+const PB_VERSION: &str = "0.40.6";
 const SUPERUSER_EMAIL: &str = "admin@test.local";
 const SUPERUSER_PASSWORD: &str = "test-password-123";
 
