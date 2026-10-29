@@ -7,7 +7,12 @@
   };
 
   outputs =
-    { nixpkgs, flake-utils, ... }:
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      ...
+    }:
     let
       # Shared between the per-system package and the overlay.
       mkMqdb =
@@ -23,6 +28,27 @@
           doCheck = false;
           meta.mainProgram = "mqdb";
         };
+
+      # The Docker image's PB_VERSION stays the one place the version is set;
+      # bumping it fails this build until both hashes below follow.
+      pocketbaseVersion = builtins.head (
+        builtins.match ".*ARG PB_VERSION=([^[:space:]]+).*" (builtins.readFile ./pocketbase/Dockerfile)
+      );
+      mkPocketbase =
+        pkgs:
+        # 0.40 needs Go 1.27, which is why nixpkgs' own pocketbase stays on 0.39.
+        (pkgs.pocketbase.override { buildGoModule = pkgs.buildGo127Module; }).overrideAttrs (
+          finalAttrs: _: {
+            version = pocketbaseVersion;
+            src = pkgs.fetchFromGitHub {
+              owner = "pocketbase";
+              repo = "pocketbase";
+              rev = "v${finalAttrs.version}";
+              hash = "sha256-vI8uIWRsivOBKV5x0435w+EBUvXjyXFf0M657ErE/Os=";
+            };
+            vendorHash = "sha256-LRjHwlGQrcY0ZJdv04ZqV/Adl7N5Us9lvlNb7YSmMdg=";
+          }
+        );
     in
     (flake-utils.lib.eachDefaultSystem (
       system:
@@ -32,6 +58,12 @@
       {
         packages.mqdb = mkMqdb pkgs;
         packages.default = mkMqdb pkgs;
+        packages.frontend = pkgs.callPackage ./nix/frontend.nix { };
+        packages.pocketbase = mkPocketbase pkgs;
+
+        checks = pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          nixos-module = pkgs.testers.runNixOSTest (import ./nixos-test.nix { inherit self; });
+        };
 
         devShells.default = pkgs.mkShell {
           # bun runs the frontend, the build, and scripts/migrate.ts (bun:sqlite).
@@ -57,5 +89,6 @@
     ))
     // {
       overlays.default = final: _prev: { mqdb = mkMqdb final; };
+      nixosModules.default = import ./nix/module.nix self;
     };
 }

@@ -62,6 +62,24 @@ This builds and starts both the frontend (nginx on port 80) and PocketBase (port
 | `SMTP_SENDER_ADDRESS`             | _(none)_  | From address for OTP emails |
 | `SMTP_SENDER_NAME`                | _(none)_  | From name for OTP emails |
 
+#### NixOS
+
+The flake exports a NixOS module that runs PocketBase alone, serving the built frontend itself instead of nginx. It takes the same variables through `environment` or, for secrets, `environmentFile`:
+
+```nix
+{
+  imports = [ miniqdb.nixosModules.default ];
+  services.miniqdb = {
+    enable = true;
+    port = 8090;
+    environment.APP_NAME = "miniqdb";
+    environmentFile = "/run/secrets/miniqdb.env";
+  };
+}
+```
+
+PocketBase's data lives in `/var/lib/miniqdb`. The module runs the PocketBase version from `pocketbase/Dockerfile`, so both deployments share one `PB_VERSION`. A frontend dependency bump changes `bun.lock`, which needs a new `outputHash` in `nix/frontend.nix`; `nix build .#frontend` prints it.
+
 ## API Tokens
 
 Every quote and vote goes through the regular PocketBase record API, so anything that holds a valid auth token can submit quotes — no OTP login required. PocketBase's impersonation feature serves as the API key mechanism: a superuser mints a long-lived, nonrenewable token for a user, and requests made with it are subject to the normal API rules (quotes must carry the token owner's email as `author`).

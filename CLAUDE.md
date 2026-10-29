@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-miniqdb is a minimalistic quote database web application for private communities. It uses a Vite + React frontend with PocketBase as the backend, deployed via docker-compose.
+miniqdb is a minimalistic quote database web application for private communities. It uses a Vite + React frontend with PocketBase as the backend, deployed via docker-compose or the flake's NixOS module (`nix/module.nix`).
 
 ## Essential Commands
 
@@ -44,7 +44,7 @@ miniqdb is a minimalistic quote database web application for private communities
 - **Backend**: PocketBase (REST API, auth, realtime)
 - **UI**: Material-UI (MUI)
 - **Auth**: PocketBase OTP (email code, no passwords)
-- **Deployment**: docker-compose (nginx frontend + PocketBase)
+- **Deployment**: docker-compose (nginx frontend + PocketBase) or the NixOS module (PocketBase serving the frontend; README, "NixOS")
 
 ### Project Structure
 - `/src/routes/` - TanStack Router file-based routes
@@ -85,7 +85,7 @@ miniqdb is a minimalistic quote database web application for private communities
 - **webhooks**: url, active (bool)
 - **users**: PocketBase auth collection with isAdmin field
 
-### Environment Configuration (docker-compose)
+### Environment Configuration (docker-compose and NixOS module)
 - `APP_NAME` - Application name (default: miniqdb)
 - `LOGIN_BUTTON_TEXT` - Login button label (default: Login)
 - `NOTHING_TO_SEE_HERE_BUTTON_TEXT` - Easter egg button (default: empty/hidden)
