@@ -77,13 +77,12 @@
 
         devShells.default = pkgs.mkShell {
           # bun runs the frontend, the build, and scripts/migrate.ts (bun:sqlite).
-          # PocketBase itself is included for running the backend locally without
-          # Docker; `docker compose up pocketbase` remains the canonical path and
-          # pins the exact version used in production.
+          # PocketBase is the pinned build the module deploys, for running the
+          # backend locally without Docker.
           # The Rust toolchain builds the mqdb CLI in cli/.
           packages = [
             pkgs.bun
-            pkgs.pocketbase
+            self.packages.${system}.pocketbase
             pkgs.cargo
             pkgs.rustc
             pkgs.rust-analyzer
