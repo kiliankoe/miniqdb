@@ -78,7 +78,7 @@ The flake exports a NixOS module that runs PocketBase alone, serving the built f
 }
 ```
 
-PocketBase's data lives in `/var/lib/miniqdb`. The module runs the PocketBase version from `pocketbase/Dockerfile`, so both deployments share one `PB_VERSION`. A frontend dependency bump changes `bun.lock`, which needs a new `outputHash` in `nix/frontend.nix`; `nix build .#frontend` prints it.
+PocketBase's data lives in `/var/lib/miniqdb`. The frontend's Nix build takes its dependencies from `bun.nix`, which [bun2nix](https://github.com/nix-community/bun2nix) generates from `bun.lock`. The `postinstall` script regenerates it on every `bun install`, so commit it together with `bun.lock`; CI fails when the two disagree. Dependabot runs no install scripts, so a workflow regenerates `bun.nix` on its PRs and pushes the result. Because that push uses the workflow token, the PR's checks for the new commit only start once you click "Approve workflows to run". The `bun2nix` devDependency and the flake input's tag must move together, since `bun.nix` has no stable format across bun2nix versions.
 
 ## API Tokens
 

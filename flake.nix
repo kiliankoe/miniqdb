@@ -4,6 +4,12 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    # bun.nix has no stable schema across bun2nix versions, so this tag moves
+    # together with the bun2nix devDependency in package.json.
+    bun2nix = {
+      url = "github:nix-community/bun2nix/2.1.2";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -11,6 +17,7 @@
       self,
       nixpkgs,
       flake-utils,
+      bun2nix,
       ...
     }:
     let
@@ -58,7 +65,9 @@
       {
         packages.mqdb = mkMqdb pkgs;
         packages.default = mkMqdb pkgs;
-        packages.frontend = pkgs.callPackage ./nix/frontend.nix { };
+        packages.frontend = pkgs.callPackage ./nix/frontend.nix {
+          bun2nix = bun2nix.packages.${system}.default;
+        };
         packages.pocketbase = mkPocketbase pkgs;
 
         checks = pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {

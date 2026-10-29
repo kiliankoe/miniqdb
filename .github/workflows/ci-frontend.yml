@@ -18,7 +18,10 @@ jobs:
         with:
           path: .pb-test
           key: pb-test-${{ hashFiles('test/integration/pb-harness.ts') }}
+      # The postinstall script regenerates bun.nix, so any diff means it no
+      # longer matches bun.lock. `add -N` makes a missing bun.nix show up too.
       - run: bun install --frozen-lockfile
+      - run: git add -N bun.nix && git diff --exit-code bun.nix
       - run: bun run lint
       - run: bun run build
       - run: bun run test:all

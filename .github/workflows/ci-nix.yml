@@ -1,0 +1,18 @@
+name: Nix CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["cli/**", ".github/workflows/ci-rust.yml"]
+  pull_request:
+    paths-ignore: ["cli/**", ".github/workflows/ci-rust.yml"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/nix-installer-action@v23
+      - uses: DeterminateSystems/magic-nix-cache-action@v15
+      # The packages the NixOS module deploys.
+      - run: nix build -L .#frontend .#pocketbase

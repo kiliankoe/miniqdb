@@ -15,6 +15,8 @@ miniqdb is a minimalistic quote database web application for private communities
 - `bun run lint` - Run Biome linter
 - `bun run format` - Format code with Biome
 
+`bun install` also regenerates `bun.nix`, the Nix build's dependency list (bun2nix); commit it with `bun.lock`.
+
 ### Testing
 - `bun run test` - Run frontend unit tests (Vitest)
 - `bun run test:integration` - Run PocketBase hook integration tests (boots an ephemeral PocketBase binary against the real hooks/migrations; downloads the pinned binary to `.pb-test/` on first run)

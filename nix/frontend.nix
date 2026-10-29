@@ -1,12 +1,13 @@
 {
   lib,
   stdenvNoCC,
-  bun,
-  nodejs,
-  writableTmpDirAsHomeHook,
+  bun2nix,
 }:
 
-let
+stdenvNoCC.mkDerivation {
+  pname = "miniqdb-frontend";
+  version = "0";
+
   src = lib.fileset.toSource {
     root = ../.;
     fileset = lib.fileset.unions [
@@ -21,59 +22,15 @@ let
     ];
   };
 
-  # The sandbox has no network, so dependencies come from a fixed-output
-  # derivation. Any bun.lock change needs a new outputHash: build, then copy the
-  # hash from the mismatch error. `--cpu`/`--os` fetch every platform's native
-  # binaries (esbuild, rollup), which keeps the hash the same on every system.
-  node_modules = stdenvNoCC.mkDerivation {
-    pname = "miniqdb-node_modules";
-    version = "0";
-    inherit src;
+  nativeBuildInputs = [ bun2nix.hook ];
 
-    nativeBuildInputs = [
-      bun
-      writableTmpDirAsHomeHook
-    ];
+  # bun.nix is generated from bun.lock by the postinstall script and checked
+  # by CI, so a dependency bump needs no hand-edited hash here.
+  bunDeps = bun2nix.fetchBunDeps { bunNix = ../bun.nix; };
 
-    dontConfigure = true;
-
-    buildPhase = ''
-      runHook preBuild
-      bun install --frozen-lockfile --ignore-scripts --no-progress --cpu="*" --os="*"
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-      cp -R node_modules $out
-      runHook postInstall
-    '';
-
-    # A fixed-output derivation must not reference store paths.
-    dontFixup = true;
-
-    outputHash = "sha256-94y6XaBSGmnc1ZUTUkP/kVPonVK0ejGQL4oLBpFBvWc=";
-    outputHashAlgo = "sha256";
-    outputHashMode = "recursive";
-  };
-in
-stdenvNoCC.mkDerivation {
-  pname = "miniqdb-frontend";
-  version = "0";
-  inherit src;
-
-  nativeBuildInputs = [
-    bun
-    nodejs
-  ];
-
-  configurePhase = ''
-    runHook preConfigure
-    cp -R ${node_modules} node_modules
-    chmod -R u+w node_modules
-    patchShebangs node_modules
-    runHook postConfigure
-  '';
+  # No dependency needs its install script, and the project's own postinstall
+  # would only regenerate bun.nix.
+  dontRunLifecycleScripts = true;
 
   buildPhase = ''
     runHook preBuild

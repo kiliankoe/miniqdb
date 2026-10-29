@@ -1,0 +1,69 @@
+# Dependabot runs no lifecycle scripts, so its bun.lock updates leave bun.nix
+# stale. This regenerates it and pushes the result to the PR branch.
+#
+# Two jobs keep the write token away from dependency code: `generate` runs
+# bun2nix with a read-only token, `push` only commits the file it produced.
+#
+# A push made with GITHUB_TOKEN starts the PR's workflows only after someone
+# clicks "Approve workflows to run". "[dependabot skip]" lets Dependabot keep
+# rebasing the PR over the extra commit, which reruns this workflow.
+name: Regenerate bun.nix
+
+on:
+  pull_request:
+    paths: [bun.lock]
+
+concurrency:
+  group: bun-nix-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run postinstall
+      - id: diff
+        run: |
+          if git diff --quiet bun.nix; then
+            echo changed=false >> "$GITHUB_OUTPUT"
+          else
+            echo changed=true >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.diff.outputs.changed == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: bun-nix
+          path: bun.nix
+
+  push:
+    needs: generate
+    if: needs.generate.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: bun-nix
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "build(nix): regenerate bun.nix [dependabot skip]" bun.nix
+          git push origin "HEAD:refs/heads/$HEAD_REF"
+        env:
+          HEAD_REF: ${{ github.head_ref }}
