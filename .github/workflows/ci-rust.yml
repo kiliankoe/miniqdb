@@ -1,11 +1,13 @@
 name: CLI CI
 
 on:
+  # The integration tests run against pocketbase/ (hooks, migrations, the
+  # version pin), so changes there have to pass them too.
   push:
     branches: [main]
-    paths: ["cli/**", ".github/workflows/ci-rust.yml"]
+    paths: ["cli/**", "pocketbase/**", ".github/workflows/ci-rust.yml"]
   pull_request:
-    paths: ["cli/**", ".github/workflows/ci-rust.yml"]
+    paths: ["cli/**", "pocketbase/**", ".github/workflows/ci-rust.yml"]
 
 jobs:
   check:
@@ -21,11 +23,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: cli
-      # Integration tests boot a real PocketBase; cache the pinned binary.
+      # Integration tests boot a real PocketBase; cache the binary per pinned version.
       - uses: actions/cache@v6
         with:
           path: .pb-test
-          key: pb-test-${{ hashFiles('cli/tests/harness/mod.rs') }}
+          key: pb-test-${{ hashFiles('pocketbase/Dockerfile') }}
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test

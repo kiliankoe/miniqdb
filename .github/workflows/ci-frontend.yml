@@ -13,11 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
-      # Integration tests boot a real PocketBase; cache the pinned binary.
+      # Integration tests boot a real PocketBase; cache the binary per pinned version.
       - uses: actions/cache@v6
         with:
           path: .pb-test
-          key: pb-test-${{ hashFiles('test/integration/pb-harness.ts') }}
+          key: pb-test-${{ hashFiles('pocketbase/Dockerfile') }}
       # The postinstall script regenerates bun.nix, so any diff means it no
       # longer matches bun.lock. `add -N` makes a missing bun.nix show up too.
       - run: bun install --frozen-lockfile

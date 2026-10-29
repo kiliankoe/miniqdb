@@ -1,6 +1,6 @@
 # Minor and patch bumps are grouped into one PR per ecosystem; majors get
-# their own PRs since they tend to need code changes. The PocketBase version
-# is pinned by hand (Dockerfile ARG and both test harnesses) and isn't tracked.
+# their own PRs since they tend to need code changes. Dependabot can't track
+# the PocketBase pin, so pocketbase-update.yml bumps that instead.
 version: 2
 updates:
   - package-ecosystem: bun

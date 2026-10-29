@@ -1,5 +1,11 @@
 import { execFileSync, spawn } from "node:child_process";
-import { createWriteStream, existsSync, mkdirSync, rmSync } from "node:fs";
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+} from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
@@ -9,12 +15,23 @@ import { pipeline } from "node:stream/promises";
 import { fileURLToPath } from "node:url";
 import PocketBase from "pocketbase";
 
-// Pin to the same version the production Dockerfile builds against.
-const PB_VERSION = "0.40.6";
 const SUPERUSER_EMAIL = "admin@test.local";
 const SUPERUSER_PASSWORD = "test-password-123";
 
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
+
+// The Dockerfile's ARG is the single version pin, shared with the flake and
+// the Rust harness, so the update workflow has only one place to bump.
+function pinnedVersion(): string {
+  const dockerfile = readFileSync(
+    join(repoRoot, "pocketbase", "Dockerfile"),
+    "utf8",
+  );
+  const match = dockerfile.match(/^ARG PB_VERSION=(\S+)$/m);
+  if (!match) throw new Error("No ARG PB_VERSION in pocketbase/Dockerfile");
+  return match[1];
+}
+const PB_VERSION = pinnedVersion();
 const cacheDir = join(repoRoot, ".pb-test");
 const hooksDir = join(repoRoot, "pocketbase", "pb_hooks");
 const migrationsDir = join(repoRoot, "pocketbase", "pb_migrations");

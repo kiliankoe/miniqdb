@@ -1,0 +1,48 @@
+# Dependabot doesn't track the PocketBase pin, so this bumps it to the newest
+# stable release and keeps one PR open on a fixed branch, updating it when
+# another release lands before it is merged.
+#
+# A PR opened with GITHUB_TOKEN starts its workflows only after someone clicks
+# "Approve workflows to run", and needs "Allow GitHub Actions to create and
+# approve pull requests" enabled in the repository's Actions settings.
+name: Update PocketBase
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: pocketbase-update
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/nix-installer-action@v23
+      - uses: DeterminateSystems/magic-nix-cache-action@v15
+      - id: bump
+        run: scripts/update-pocketbase.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+      # With no diff against main, this closes a leftover PR and deletes its
+      # branch instead.
+      - uses: peter-evans/create-pull-request@v8
+        with:
+          branch: pocketbase-update
+          delete-branch: true
+          commit-message: "build(pocketbase): bump to ${{ steps.bump.outputs.to }}"
+          title: "build(pocketbase): bump to ${{ steps.bump.outputs.to }}"
+          body: |
+            Bumps PocketBase from ${{ steps.bump.outputs.from }} to ${{ steps.bump.outputs.to }} ([release notes](https://github.com/pocketbase/pocketbase/releases/tag/v${{ steps.bump.outputs.to }})) and recomputes the flake's source and vendor hashes.
+
+            PocketBase is pre-1.0, so a minor bump can break hooks or migrations. The integration tests cover those.
+
+            Opened by the `Update PocketBase` workflow. Its next run force-pushes this branch, so push any fixes the bump needs to a branch of your own. Checks start once you click "Approve workflows to run".

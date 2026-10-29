@@ -37,7 +37,8 @@
         };
 
       # The Docker image's PB_VERSION stays the one place the version is set;
-      # bumping it fails this build until both hashes below follow.
+      # bumping it fails this build until both hashes below follow, which
+      # scripts/update-pocketbase.sh recomputes.
       pocketbaseVersion = builtins.head (
         builtins.match ".*ARG PB_VERSION=([^[:space:]]+).*" (builtins.readFile ./pocketbase/Dockerfile)
       );

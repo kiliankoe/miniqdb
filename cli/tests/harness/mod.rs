@@ -10,8 +10,6 @@ use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 
-// Keep in sync with pocketbase/Dockerfile and test/integration/pb-harness.ts.
-const PB_VERSION: &str = "0.40.6";
 const SUPERUSER_EMAIL: &str = "admin@test.local";
 const SUPERUSER_PASSWORD: &str = "test-password-123";
 
@@ -22,11 +20,25 @@ fn repo_root() -> PathBuf {
         .to_path_buf()
 }
 
+/// The Dockerfile's ARG is the single version pin, shared with the flake and
+/// the web harness, so the update workflow has only one place to bump.
+fn pinned_version() -> String {
+    let dockerfile = std::fs::read_to_string(repo_root().join("pocketbase/Dockerfile"))
+        .expect("read pocketbase/Dockerfile");
+    dockerfile
+        .lines()
+        .find_map(|line| line.strip_prefix("ARG PB_VERSION="))
+        .expect("ARG PB_VERSION in pocketbase/Dockerfile")
+        .trim()
+        .to_string()
+}
+
 fn ensure_binary() -> &'static Path {
     static BIN: OnceLock<PathBuf> = OnceLock::new();
     BIN.get_or_init(|| {
+        let pb_version = pinned_version();
         let cache = repo_root().join(".pb-test");
-        let bin = cache.join(format!("pocketbase-{PB_VERSION}"));
+        let bin = cache.join(format!("pocketbase-{pb_version}"));
         if bin.exists() {
             return bin;
         }
@@ -37,9 +49,9 @@ fn ensure_binary() -> &'static Path {
             (_, "aarch64") => ("linux", "arm64"),
             _ => ("linux", "amd64"),
         };
-        let zip_name = format!("pocketbase_{PB_VERSION}_{os}_{arch}.zip");
+        let zip_name = format!("pocketbase_{pb_version}_{os}_{arch}.zip");
         let url = format!(
-            "https://github.com/pocketbase/pocketbase/releases/download/v{PB_VERSION}/{zip_name}"
+            "https://github.com/pocketbase/pocketbase/releases/download/v{pb_version}/{zip_name}"
         );
         let zip_path = cache.join(&zip_name);
         let mut res = ureq::get(&url).call().expect("download PocketBase");

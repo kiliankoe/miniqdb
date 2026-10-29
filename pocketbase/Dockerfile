@@ -1,5 +1,7 @@
 FROM alpine:latest
 
+# The only PocketBase version pin. flake.nix, both test harnesses and
+# scripts/update-pocketbase.sh parse this line, so keep it as plain x.y.z.
 ARG PB_VERSION=0.40.6
 
 RUN apk add --no-cache \
