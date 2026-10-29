@@ -16,3 +16,5 @@ jobs:
       - uses: DeterminateSystems/magic-nix-cache-action@v15
       # The packages the NixOS module deploys.
       - run: nix build -L .#frontend .#pocketbase
+      # Boots the module in a VM; hosted Linux runners have KVM.
+      - run: nix build -L .#checks.x86_64-linux.nixos-module
