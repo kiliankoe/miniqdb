@@ -452,3 +452,13 @@ onBootstrap((e) => {
     console.log(`Failed to apply settings from env: ${err}`);
   }
 });
+
+// ---------------------------------------------------------------------------
+// Unknown API routes answer 404 instead of the SPA's index.html. When
+// PocketBase serves the frontend itself (the NixOS module), its index fallback
+// catches every unmatched GET, /api/ included. Real API routes are more
+// specific than this pattern, so they still win.
+// ---------------------------------------------------------------------------
+routerAdd("GET", "/api/{path...}", () => {
+  throw new NotFoundError();
+});
