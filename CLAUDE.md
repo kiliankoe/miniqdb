@@ -55,7 +55,7 @@ miniqdb is a minimalistic quote database web application for private communities
 - `/src/routes/` - TanStack Router file-based routes
   - `__root.tsx` - Root layout (MUI theme, CssBaseline)
   - `_authenticated.tsx` - Auth guard layout + realtime subscriptions
-  - `_authenticated/` - Protected pages (home, search, submit, admin, quote detail)
+  - `_authenticated/` - Protected pages (home, search, submit, guess game, admin, quote detail)
   - `login.tsx` - Login page with OTP flow
 - `/src/components/` - React components (QuoteView, VoteView, Header, Navigation, etc.)
 - `/src/lib/` - Shared logic
@@ -64,6 +64,7 @@ miniqdb is a minimalistic quote database web application for private communities
   - `realtime.ts` - PocketBase realtime subscriptions
   - `config.ts` - Runtime config loader
   - `types.ts` - Shared TypeScript types
+  - `guess.ts` - Speaker parsing and round picking for the guess game
 - `/src/hooks/` - Custom React hooks
 - `/pocketbase/` - PocketBase server config
   - `pb_hooks/` - Server-side JS hooks (score denorm, shortId, webhooks, domain validation)
@@ -97,4 +98,5 @@ miniqdb is a minimalistic quote database web application for private communities
 - `ALLOWED_DOMAINS` - Comma-separated allowed email domains (on PocketBase service)
 - `ADMIN_EMAILS` - Comma-separated admin emails (on PocketBase service); authoritative when set: reconciled on startup via `onBootstrap` and at user-create time in `hooks.pb.js`
 - `SMTP_*` - `SMTP_HOST`/`SMTP_PORT`/`SMTP_USERNAME`/`SMTP_PASSWORD`/`SMTP_TLS`/`SMTP_SENDER_ADDRESS`/`SMTP_SENDER_NAME` (on PocketBase service); when `SMTP_HOST` is set, an `onBootstrap` hook configures mail on startup. Otherwise configure SMTP via the PocketBase admin UI.
+- `SPEAKER_ALIASES` - `name=canonical` pairs merging speaker spellings in the `#guess` game (on PocketBase service; served to logged-in users via `GET /api/speaker-aliases`)
 - `APP_NAME` / `BASE_URL` - also read by the PocketBase new-quote webhook hook to render the Slack notification (`New <APP_NAME> quote added.` + a `Quote #N` link to `BASE_URL/<shortId>`)

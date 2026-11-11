@@ -2,6 +2,8 @@
 
 A minimalistic quote database, akin to bash qdb. Built for private communities, not the wider web.
 
+`#guess` is a small game that hides a quote's speaker and asks who said it. It parses the speaker from the quote text, so it only uses quotes with a single attribution after the closing quote mark, e.g. `"…" - Name` or `"…" - Name zu Someone`. Each distinct spelling counts as its own speaker unless `SPEAKER_ALIASES` maps it to another.
+
 ## Getting Started
 
 ### Development
@@ -54,6 +56,7 @@ This builds and starts both the frontend (nginx on port 80) and PocketBase (port
 | `ALLOWED_DOMAINS`                 | _(none)_  | Comma-separated allowed email domains |
 | `ADMIN_EMAILS`                    | _(none)_  | Comma-separated admin emails (authoritative when set) |
 | `BASE_URL`                        | _(none)_  | Public app URL; used for the `Quote #N` link in webhook notifications |
+| `SPEAKER_ALIASES`                 | _(none)_  | Comma-separated `name=canonical` pairs that make `#guess` treat several spellings as one speaker, e.g. `Vincent Lindner=Vincent, Peter=Peter B.`; served to logged-in users only |
 | `SMTP_HOST`                       | _(none)_  | SMTP server host; when set, mail is configured on startup |
 | `SMTP_PORT`                       | `587`     | SMTP server port |
 | `SMTP_USERNAME`                   | _(none)_  | SMTP auth username |

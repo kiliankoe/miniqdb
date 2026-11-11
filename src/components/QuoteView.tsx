@@ -39,9 +39,13 @@ function parseMarkdownLinks(text: string) {
 export function QuoteView({
   quote,
   isAdmin,
+  metaHidden,
 }: {
   quote: QuoteWithVote;
   isAdmin?: boolean;
+  // Keeps the date and vote row's space, so revealing it doesn't shift the
+  // layout.
+  metaHidden?: boolean;
 }) {
   const createdAt = new Date(quote.created);
   const [isEditing, setIsEditing] = useState(false);
@@ -87,7 +91,14 @@ export function QuoteView({
         },
       }}
     >
-      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{
+          alignItems: "center",
+          visibility: metaHidden ? "hidden" : undefined,
+        }}
+      >
         <Link to="/$quoteId" params={{ quoteId: String(quote.shortId) }}>
           <Typography
             variant="body2"

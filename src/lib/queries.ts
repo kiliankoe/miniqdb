@@ -114,6 +114,36 @@ export function useRandomQuotes(count: number) {
   });
 }
 
+// Kept outside the ["quotes"] key so realtime vote and score updates don't
+// refetch the whole list; the game only needs the text.
+export function useGuessQuotes() {
+  return useQuery({
+    queryKey: ["guess-quotes"],
+    queryFn: () =>
+      getPb()
+        .collection("quotes")
+        .getFullList<Pick<QuoteRecord, "id" | "shortId" | "text">>({
+          fields: "id,shortId,text",
+        }),
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+}
+
+// Served by a hook route rather than /config.json, which is public, because
+// the list names community members.
+export function useSpeakerAliases() {
+  return useQuery({
+    queryKey: ["speaker-aliases"],
+    queryFn: async () => {
+      const { speakerAliases } = await getPb().send<{
+        speakerAliases: string;
+      }>("/api/speaker-aliases", {});
+      return speakerAliases;
+    },
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+}
+
 export function useSearchQuotes(query: string) {
   return useQuery({
     queryKey: ["quotes", "search", query],

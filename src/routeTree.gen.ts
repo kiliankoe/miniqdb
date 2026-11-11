@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedQuoteIdRouteImport } from './routes/_authenticated/$quoteId'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedGuessRouteImport } from './routes/_authenticated/guess'
 import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedSubmitRouteImport } from './routes/_authenticated/submit'
 import { Route as LoginErrorRouteImport } from './routes/login/error'
@@ -43,6 +44,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedGuessRoute = AuthenticatedGuessRouteImport.update({
+  id: '/guess',
+  path: '/guess',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRouteWithChildren
   '/$quoteId': typeof AuthenticatedQuoteIdRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/guess': typeof AuthenticatedGuessRoute
   '/search': typeof AuthenticatedSearchRoute
   '/submit': typeof AuthenticatedSubmitRoute
   '/login/error': typeof LoginErrorRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRouteWithChildren
   '/$quoteId': typeof AuthenticatedQuoteIdRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/guess': typeof AuthenticatedGuessRoute
   '/search': typeof AuthenticatedSearchRoute
   '/submit': typeof AuthenticatedSubmitRoute
   '/login/error': typeof LoginErrorRoute
@@ -90,6 +98,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRouteWithChildren
   '/_authenticated/$quoteId': typeof AuthenticatedQuoteIdRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/guess': typeof AuthenticatedGuessRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/submit': typeof AuthenticatedSubmitRoute
   '/login/error': typeof LoginErrorRoute
@@ -103,6 +112,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/$quoteId'
     | '/admin'
+    | '/guess'
     | '/search'
     | '/submit'
     | '/login/error'
@@ -112,6 +122,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/$quoteId'
     | '/admin'
+    | '/guess'
     | '/search'
     | '/submit'
     | '/login/error'
@@ -123,6 +134,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/$quoteId'
     | '/_authenticated/admin'
+    | '/_authenticated/guess'
     | '/_authenticated/search'
     | '/_authenticated/submit'
     | '/login/error'
@@ -172,6 +184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/guess': {
+      id: '/_authenticated/guess'
+      path: '/guess'
+      fullPath: '/guess'
+      preLoaderRoute: typeof AuthenticatedGuessRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/search': {
       id: '/_authenticated/search'
       path: '/search'
@@ -206,6 +225,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedQuoteIdRoute: typeof AuthenticatedQuoteIdRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedGuessRoute: typeof AuthenticatedGuessRoute
   AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedSubmitRoute: typeof AuthenticatedSubmitRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -214,6 +234,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedQuoteIdRoute: AuthenticatedQuoteIdRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedGuessRoute: AuthenticatedGuessRoute,
   AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedSubmitRoute: AuthenticatedSubmitRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
