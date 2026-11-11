@@ -41,6 +41,9 @@ export function Navigation() {
       <Link to="/submit" className={styles.link}>
         #submit
       </Link>
+      <Link to="/guess" className={styles.link}>
+        #guess
+      </Link>
       {isAdmin && (
         <Link to="/admin" className={styles.link}>
           #admin

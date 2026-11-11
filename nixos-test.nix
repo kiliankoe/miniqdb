@@ -79,6 +79,8 @@ in
           assert closed.succeed(f"curl -sf {local}/quote/42") == index
           # The fallback must not swallow the API.
           assert status(closed, f"{local}/api/does-not-exist") == "404"
+          # Speaker names stay behind login.
+          assert status(closed, f"{local}/api/speaker-aliases") == "401"
 
       with subtest("config.json defaults"):
           assert get_json(closed, f"{local}/config.json") == {

@@ -70,7 +70,8 @@ in
       description = ''
         Environment variables for the frontend config (`APP_NAME`,
         `LOGIN_BUTTON_TEXT`, `NOTHING_TO_SEE_HERE_BUTTON_TEXT`) and the hooks
-        (`ALLOWED_DOMAINS`, `ADMIN_EMAILS`, `APP_NAME`, `BASE_URL`, `SMTP_*`).
+        (`ALLOWED_DOMAINS`, `ADMIN_EMAILS`, `APP_NAME`, `BASE_URL`,
+        `SPEAKER_ALIASES`, `SMTP_*`).
         These end up world-readable in the Nix store; use environmentFile for
         secrets.
       '';

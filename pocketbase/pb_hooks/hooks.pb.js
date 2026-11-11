@@ -454,6 +454,18 @@ onBootstrap((e) => {
 });
 
 // ---------------------------------------------------------------------------
+// Speaker aliases for the #guess game. Served here instead of the public
+// /config.json because the list names community members. The client parses
+// the raw `name=canonical, …` string.
+// ---------------------------------------------------------------------------
+routerAdd(
+  "GET",
+  "/api/speaker-aliases",
+  (e) => e.json(200, { speakerAliases: $os.getenv("SPEAKER_ALIASES") }),
+  $apis.requireAuth(),
+);
+
+// ---------------------------------------------------------------------------
 // Unknown API routes answer 404 instead of the SPA's index.html. When
 // PocketBase serves the frontend itself (the NixOS module), its index fallback
 // catches every unmatched GET, /api/ included. Real API routes are more

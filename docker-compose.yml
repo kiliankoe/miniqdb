@@ -12,6 +12,8 @@ services:
       # Used by the new-quote webhook notification (app name + "Quote #N" link).
       - APP_NAME=${APP_NAME:-miniqdb}
       - BASE_URL=${BASE_URL:-}
+      # Served to logged-in users only, for the #guess game.
+      - SPEAKER_ALIASES=${SPEAKER_ALIASES:-}
       # SMTP (optional): when SMTP_HOST is set, mail is configured on startup.
       # Otherwise configure it in the PocketBase admin UI instead.
       - SMTP_HOST=${SMTP_HOST:-}
